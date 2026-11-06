@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catalogue Public — Cvisual POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Catalogue Officiel — Cvisual POS</title>
 
-    <!-- Typographie : DM Sans & Syne -->
+    <!-- Typographie : DM Sans (Corps) & Syne (Titres) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -19,36 +19,109 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
+<body class="catalogue-page-wrapper">
 
     <div class="catalogue-container" id="catalogue-root">
-        <div style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
-            <i data-lucide="loader" style="animation: spin 1s linear infinite; width: 32px; height: 32px;"></i>
-            <div style="margin-top: 12px; font-weight: 600;">Chargement du catalogue...</div>
+        <div style="padding: 80px 20px; text-align: center; color: var(--text-muted);">
+            <i data-lucide="loader-2" style="animation: spin 1s linear infinite; width: 36px; height: 36px; color: var(--color-primary); margin: 0 auto 12px auto; display: block;"></i>
+            <div style="font-weight: 600; font-size: 15px;">Chargement de la vitrine...</div>
+        </div>
+    </div>
+
+    <!-- BARRE FLOTTANTE DU PANIER WHATSAPP -->
+    <div class="catalogue-floating-cart-bar" id="cat-floating-cart">
+        <div class="cart-bar-info">
+            <div class="cart-bar-badge" id="cat-cart-badge">0</div>
+            <div>
+                <div class="cart-bar-total-label">Panier de commande</div>
+                <div class="cart-bar-total-amount" id="cat-cart-total">0.00 HTG</div>
+            </div>
+        </div>
+        <button type="button" class="btn-cart-bar-checkout" id="btn-open-cart-sheet">
+            <span>Commander</span>
+            <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+        </button>
+    </div>
+
+    <!-- TIROIR MODAL DU PANIER (BOTTOM SHEET) -->
+    <div class="cart-sheet-backdrop" id="cart-sheet-modal">
+        <div class="cart-sheet-dialog">
+            <div class="cart-sheet-header">
+                <div class="cart-sheet-title">
+                    <i data-lucide="shopping-bag" style="color: var(--color-primary);"></i>
+                    <span>Votre Commande WhatsApp</span>
+                </div>
+                <button type="button" class="cart-sheet-close" id="btn-close-cart-sheet">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <div class="cart-sheet-body">
+                <div id="cart-sheet-items-list"></div>
+
+                <div class="cart-sheet-form">
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Votre nom et prénom *</label>
+                        <input type="text" id="order-customer-name" class="form-control" placeholder="Ex: Stéphanie Paul" style="height: 40px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Téléphone de contact</label>
+                        <input type="tel" id="order-customer-phone" class="form-control" placeholder="Ex: +509 3455 6677" style="height: 40px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Remarque, date ou adresse de livraison</label>
+                        <textarea id="order-customer-notes" class="form-control" rows="2" placeholder="Précisez un rendez-vous ou des détails particuliers..." style="min-height: 60px; font-size: 13px;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cart-sheet-footer">
+                <div class="cart-sheet-total-row">
+                    <span class="cart-sheet-total-label">Total estimé :</span>
+                    <span class="cart-sheet-total-val" id="cart-sheet-total-val">0.00 HTG</span>
+                </div>
+                <button type="button" class="btn-send-wa-order" id="btn-confirm-wa-order">
+                    <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
+                    <span>Envoyer la commande sur WhatsApp</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { db } from './assets/js/supabase.js';
 
+        let cartItems = [];
+        let currentBusiness = null;
+        let currentCurrency = 'HTG';
+
+        function getIconForProduct(product) {
+            const name = (product.name || '').toLowerCase();
+            const desc = (product.description || '').toLowerCase();
+            const text = name + ' ' + desc;
+
+            if (text.includes('coiff') || text.includes('tiss') || text.includes('braid') || text.includes('cheveu') || text.includes('mèche')) {
+                return 'scissors';
+            }
+            if (text.includes('ongl') || text.includes('manucure') || text.includes('vernis') || text.includes('acrylique') || text.includes('pedicure') || text.includes('pédicure')) {
+                return 'sparkles';
+            }
+            if (text.includes('visage') || text.includes('massage') || text.includes('soin') || text.includes('spa') || text.includes('peeling')) {
+                return 'heart';
+            }
+            if (text.includes('huile') || text.includes('shamp') || text.includes('crème') || text.includes('lotion') || text.includes('kit') || text.includes('produit')) {
+                return 'package';
+            }
+            return 'shopping-bag';
+        }
+
         async function initCatalogue() {
             const root = document.getElementById('catalogue-root');
             const urlParams = new URLSearchParams(window.location.search);
-            const slug = urlParams.get('e');
-
-            if (!slug) {
-                root.innerHTML = `
-                    <div class="c-card" style="padding: 48px; max-width: 500px; margin: 60px auto;">
-                        <h2 style="font-size: 20px; margin-bottom: 8px;">Catalogue introuvable</h2>
-                        <p style="color: var(--text-muted); font-size: 14px;">Aucun paramètre d'entreprise n'a été spécifié dans l'adresse URL.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
+            const slug = urlParams.get('e') || 'clarens-beauty-studio';
 
             try {
-                // 1. Charger l'entreprise approuvée avec catalogue actif
+                // 1. Récupérer l'entreprise approuvée
                 const { data: biz, error: bizErr } = await db.from('cvisual_businesses')
                     .select('*')
                     .eq('slug', slug)
@@ -57,18 +130,23 @@
 
                 if (bizErr || !biz) {
                     root.innerHTML = `
-                        <div class="c-card" style="padding: 48px; max-width: 500px; margin: 60px auto;">
-                            <h2 style="font-size: 20px; margin-bottom: 8px;">Établissement non disponible</h2>
-                            <p style="color: var(--text-muted); font-size: 14px;">Cette vitrine en ligne n'est pas encore publiée ou est momentanément suspendue.</p>
+                        <div class="c-card" style="padding: 48px; max-width: 500px; margin: 60px auto; border-radius: 20px;">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: #FEF2F2; color: #EF4444; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <i data-lucide="store"></i>
+                            </div>
+                            <h2 style="font-size: 20px; font-weight: 700; color: #1B2A4A; margin-bottom: 8px;">Établissement non disponible</h2>
+                            <p style="color: #64748B; font-size: 14px; line-height: 1.5;">Cette vitrine en ligne n'est pas encore publiée ou est momentanément inaccessible.</p>
                         </div>
                     `;
                     lucide.createIcons();
                     return;
                 }
 
-                document.title = `${biz.name} — Catalogue Officiel`;
+                currentBusiness = biz;
+                currentCurrency = biz.primary_currency || 'HTG';
+                document.title = `${biz.name} — Vitrine & Catalogue Officiel`;
 
-                // 2. Charger les catégories et produits visibles
+                // 2. Charger catégories et produits actifs
                 const [catsRes, prodsRes] = await Promise.all([
                     db.from('cvisual_categories').select('*').eq('business_id', biz.id).eq('is_active', true).order('sort_order'),
                     db.from('cvisual_products').select('*').eq('business_id', biz.id).eq('is_archived', false).eq('is_visible_in_catalogue', true).order('created_at', { ascending: false })
@@ -76,33 +154,66 @@
 
                 const categories = catsRes.data || [];
                 const products = prodsRes.data || [];
-                const curr = biz.primary_currency || 'HTG';
+
+                // Monogramme initiales si pas de logo
+                const initials = (biz.name || 'CV').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
                 root.innerHTML = `
-                    <!-- BANNIÈRE & PROFIL VITRINE -->
+                    <!-- HERO BANNER -->
                     <div class="catalogue-hero">
                         <div class="catalogue-cover" style="${biz.cover_url ? `background-image: url('${biz.cover_url}');` : ''}"></div>
                         <div class="catalogue-profile-bar">
                             <div class="catalogue-logo-wrap">
-                                <img src="${biz.logo_url || 'assets/img/logo-placeholder.svg'}" alt="Logo" class="catalogue-logo-img">
+                                ${biz.logo_url ? `
+                                    <img src="${biz.logo_url}" alt="${biz.name}" class="catalogue-logo-img">
+                                ` : `
+                                    <div class="catalogue-logo-fallback">${initials}</div>
+                                `}
                             </div>
                             <div class="catalogue-info">
+                                <div class="catalogue-header-badges">
+                                    <span class="badge-verified">
+                                        <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                        <span>Boutique Officielle</span>
+                                    </span>
+                                    <span class="badge-open">
+                                        <span class="status-dot"></span>
+                                        <span>Ouvert</span>
+                                    </span>
+                                </div>
                                 <h1 class="catalogue-title">${biz.name}</h1>
                                 ${biz.slogan ? `<div class="catalogue-slogan">${biz.slogan}</div>` : ''}
-                                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
-                                    ${biz.address ? `${biz.address}, ` : ''}${biz.city || 'Haïti'}
+                                
+                                <div class="catalogue-meta-row">
+                                    <span class="catalogue-meta-item">
+                                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
+                                        <span>${biz.address ? `${biz.address}, ` : ''}${biz.city || 'Haïti'}</span>
+                                    </span>
+                                    ${biz.phone ? `
+                                        <span class="catalogue-meta-item">
+                                            <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--text-light);"></i>
+                                            <span>${biz.phone}</span>
+                                        </span>
+                                    ` : ''}
                                 </div>
-                                <div class="catalogue-social-links">
+
+                                <div class="catalogue-actions-bar">
+                                    ${biz.whatsapp ? `
+                                        <a href="https://wa.me/${biz.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="social-pill wa-btn">
+                                            <i data-lucide="message-circle" style="width: 15px; height: 15px;"></i>
+                                            <span>WhatsApp Direct</span>
+                                        </a>
+                                    ` : ''}
                                     ${biz.phone ? `
                                         <a href="tel:${biz.phone}" class="social-pill">
-                                            <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
+                                            <i data-lucide="phone-call" style="width: 14px; height: 14px;"></i>
                                             <span>Appeler</span>
                                         </a>
                                     ` : ''}
-                                    ${biz.whatsapp ? `
-                                        <a href="https://wa.me/${biz.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="social-pill wa-btn">
-                                            <i data-lucide="message-square" style="width: 14px; height: 14px;"></i>
-                                            <span>WhatsApp</span>
+                                    ${biz.instagram ? `
+                                        <a href="https://instagram.com/${biz.instagram.replace('@', '')}" target="_blank" class="social-pill">
+                                            <i data-lucide="instagram" style="width: 14px; height: 14px;"></i>
+                                            <span>Instagram</span>
                                         </a>
                                     ` : ''}
                                 </div>
@@ -110,113 +221,274 @@
                         </div>
                     </div>
 
-                    <!-- RECHERCHE ET FILTRES CATÉGORIES -->
-                    <div style="margin-bottom: 24px;">
-                        <div class="search-input-wrapper" style="margin-bottom: 16px;">
+                    <!-- RECHERCHE ET CATÉGORIES -->
+                    <div class="catalogue-filters-wrap">
+                        <div class="catalogue-search-box">
                             <i data-lucide="search"></i>
-                            <input type="text" id="cat-search" class="form-control" placeholder="Rechercher un produit dans le catalogue...">
+                            <input type="text" id="cat-search-input" class="catalogue-search-input" placeholder="Rechercher une prestation ou un produit...">
                         </div>
-                        <div class="category-pills" id="cat-filter-pills">
-                            <button type="button" class="category-pill active" data-cat-id="">Tous les produits</button>
+
+                        <div class="category-pills-scroll" id="cat-pills-container">
+                            <button type="button" class="cat-filter-pill active" data-cat-id="">
+                                <i data-lucide="grid" style="width: 14px; height: 14px;"></i>
+                                <span>Tous les articles (${products.length})</span>
+                            </button>
                             ${categories.map(c => `
-                                <button type="button" class="category-pill" data-cat-id="${c.id}">${c.name}</button>
+                                <button type="button" class="cat-filter-pill" data-cat-id="${c.id}">
+                                    <span>${c.name}</span>
+                                </button>
                             `).join('')}
                         </div>
                     </div>
 
-                    <!-- GRILLE PRODUITS DU CATALOGUE -->
-                    <div class="products-grid" id="cat-products-grid">
-                        ${renderCatalogProducts(products, curr, biz)}
+                    <!-- GRILLE PRODUITS -->
+                    <div class="catalogue-products-grid" id="cat-products-grid">
+                        ${renderProductsGridHTML(products, currentCurrency)}
                     </div>
 
-                    <footer style="margin-top: 60px; padding: 24px 0; border-top: 1px solid var(--border-subtle); text-align: left; font-size: 12px; color: var(--text-light);">
-                        Designed by Cvisual • Catalogue en ligne pour commerces
+                    <footer style="margin-top: 50px; padding: 24px 0; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 12px; font-size: 12px; color: var(--text-light);">
+                        <div>© ${new Date().getFullYear()} ${biz.name} • Tous droits réservés.</div>
+                        <div style="font-weight: 600; color: var(--color-navy);">Designed by Cvisual</div>
                     </footer>
                 `;
 
                 lucide.createIcons();
-                setupCatalogInteractions(products, curr, biz);
+                setupCatalogLogic(products, currentCurrency, biz);
 
             } catch (err) {
-                console.error(err);
-                root.innerHTML = `<div style="padding: 40px; text-align: left;">Erreur de chargement.</div>`;
+                console.error('Erreur catalogue:', err);
+                root.innerHTML = `<div style="padding: 40px; text-align: left;">Erreur de connexion à la vitrine.</div>`;
             }
         }
 
-        function renderCatalogProducts(products, curr, biz) {
+        function renderProductsGridHTML(products, curr) {
             if (products.length === 0) {
                 return `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <div class="empty-state-icon"><i data-lucide="package-search"></i></div>
-                        <div class="empty-state-title">Aucun produit disponible</div>
-                        <div class="empty-state-desc">Les articles seront bientôt ajoutés à la vitrine.</div>
+                    <div class="empty-state" style="grid-column: 1 / -1; margin: 40px auto; text-align: center;">
+                        <div class="empty-state-icon" style="margin: 0 auto 12px auto;"><i data-lucide="package-search"></i></div>
+                        <div class="empty-state-title">Aucun article disponible</div>
+                        <div class="empty-state-desc">Aucun produit ne correspond à votre filtre de recherche.</div>
                     </div>
                 `;
             }
 
-            return products.map(p => `
-                <div class="catalogue-product-card" data-id="${p.id}">
-                    <img src="${p.image_url || 'assets/img/logo-placeholder.svg'}" alt="${p.name}" class="catalogue-card-img" loading="lazy">
-                    <div class="catalogue-card-body">
-                        <div class="catalogue-product-name">${p.name}</div>
-                        ${p.description ? `<div class="catalogue-product-desc">${p.description}</div>` : ''}
-                        <div class="catalogue-card-footer">
-                            <span class="catalogue-price">${Number(p.sale_price).toFixed(2)} ${curr}</span>
-                            <button type="button" class="btn btn-outline btn-sm btn-order-wa" data-name="${encodeURIComponent(p.name)}" data-price="${p.sale_price}" style="border-color: #25D366; color: #16A34A;">
-                                <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
-                                <span>Commander</span>
-                            </button>
+            return products.map(p => {
+                const iconName = getIconForProduct(p);
+                const hasImg = Boolean(p.image_url);
+
+                return `
+                    <div class="catalogue-product-card" data-product-id="${p.id}">
+                        <div class="catalogue-card-media">
+                            ${hasImg ? `
+                                <img src="${p.image_url}" alt="${p.name}" class="catalogue-card-img" loading="lazy">
+                            ` : `
+                                <div class="catalogue-card-placeholder">
+                                    <div class="placeholder-icon-circle">
+                                        <i data-lucide="${iconName}" style="width: 22px; height: 22px;"></i>
+                                    </div>
+                                    ${p.unit && p.unit !== 'pièce' ? `
+                                        <span class="placeholder-badge">${p.unit}</span>
+                                    ` : ''}
+                                </div>
+                            `}
+                        </div>
+                        <div class="catalogue-card-body">
+                            <div class="catalogue-product-name">${p.name}</div>
+                            ${p.description ? `<div class="catalogue-product-desc">${p.description}</div>` : ''}
+                            <div class="catalogue-card-footer">
+                                <div class="catalogue-price-box">
+                                    <span class="catalogue-price">${Number(p.sale_price).toLocaleString()} ${curr}</span>
+                                </div>
+                                <button type="button" class="btn-add-cart-mini" title="Ajouter à la commande" data-product-id="${p.id}">
+                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function setupCatalogInteractions(allProducts, curr, biz) {
-            const searchInput = document.getElementById('cat-search');
+        function setupCatalogLogic(allProducts, curr, biz) {
+            const searchInput = document.getElementById('cat-search-input');
             const grid = document.getElementById('cat-products-grid');
-            const pills = document.querySelectorAll('.category-pill');
+            const pills = document.querySelectorAll('.cat-filter-pill');
+            const floatingCartBar = document.getElementById('cat-floating-cart');
+            const cartBadge = document.getElementById('cat-cart-badge');
+            const cartTotal = document.getElementById('cat-cart-total');
+            const cartModal = document.getElementById('cart-sheet-modal');
+            const btnOpenCart = document.getElementById('btn-open-cart-sheet');
+            const btnCloseCart = document.getElementById('btn-close-cart-sheet');
+            const cartItemsList = document.getElementById('cart-sheet-items-list');
+            const cartSheetTotalVal = document.getElementById('cart-sheet-total-val');
+            const btnConfirmOrder = document.getElementById('btn-confirm-wa-order');
 
             let activeCat = '';
             let searchTerm = '';
 
             function filter() {
                 let filtered = allProducts;
-                if (activeCat) filtered = filtered.filter(p => p.category_id === activeCat);
+                if (activeCat) {
+                    filtered = filtered.filter(p => p.category_id === activeCat);
+                }
                 if (searchTerm) {
                     const q = searchTerm.toLowerCase();
-                    filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)));
+                    filtered = filtered.filter(p => 
+                        p.name.toLowerCase().includes(q) || 
+                        (p.description && p.description.toLowerCase().includes(q))
+                    );
                 }
-                grid.innerHTML = renderCatalogProducts(filtered, curr, biz);
+                grid.innerHTML = renderProductsGridHTML(filtered, curr);
                 lucide.createIcons({ root: grid });
             }
 
             if (searchInput) {
-                searchInput.oninput = (e) => {
+                searchInput.addEventListener('input', (e) => {
                     searchTerm = e.target.value.trim();
                     filter();
-                };
+                });
             }
 
             pills.forEach(p => {
-                p.onclick = () => {
+                p.addEventListener('click', () => {
                     pills.forEach(item => item.classList.remove('active'));
                     p.classList.add('active');
                     activeCat = p.getAttribute('data-cat-id');
                     filter();
-                };
+                });
             });
 
-            // Bouton Commander sur WhatsApp
-            grid.addEventListener('click', (e) => {
-                const btn = e.target.closest('.btn-order-wa');
-                if (btn && biz.whatsapp) {
-                    const name = decodeURIComponent(btn.getAttribute('data-name'));
-                    const price = btn.getAttribute('data-price');
-                    const cleanPhone = biz.whatsapp.replace(/[^0-9]/g, '');
-                    const message = encodeURIComponent(`Bonjour, je souhaite commander l'article "${name}" au prix de ${price} ${curr} vu sur votre catalogue en ligne.`);
-                    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+            // GESTION DU PANIER DE COMMANDE WHATSAPP
+            function updateCartUI() {
+                const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+                const totalPrice = cartItems.reduce((acc, item) => acc + (item.product.sale_price * item.quantity), 0);
+
+                if (totalCount > 0) {
+                    floatingCartBar.classList.add('visible');
+                    cartBadge.textContent = totalCount;
+                    cartTotal.textContent = `${totalPrice.toLocaleString()} ${curr}`;
+                    cartSheetTotalVal.textContent = `${totalPrice.toLocaleString()} ${curr}`;
+                } else {
+                    floatingCartBar.classList.remove('visible');
+                    cartModal.classList.remove('open');
                 }
+
+                // Rendu de la liste dans le tiroir modal
+                if (cartItems.length === 0) {
+                    cartItemsList.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Votre panier est vide.</div>`;
+                } else {
+                    cartItemsList.innerHTML = cartItems.map(item => `
+                        <div class="cart-sheet-item">
+                            <div style="flex: 1; min-width: 0;">
+                                <div class="cart-sheet-item-name">${item.product.name}</div>
+                                <div class="cart-sheet-item-price">${Number(item.product.sale_price).toLocaleString()} ${curr} / unité</div>
+                            </div>
+                            <div class="cart-qty-controls">
+                                <button type="button" class="btn-qty btn-decrease-qty" data-product-id="${item.product.id}">-</button>
+                                <span style="font-weight: 700; font-size: 14px; min-width: 18px; text-align: center;">${item.quantity}</span>
+                                <button type="button" class="btn-qty btn-increase-qty" data-product-id="${item.product.id}">+</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Clic sur le bouton '+' d'une carte produit
+            grid.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('.btn-add-cart-mini');
+                if (addBtn) {
+                    const prodId = addBtn.getAttribute('data-product-id');
+                    const product = allProducts.find(p => p.id === prodId);
+                    if (product) {
+                        const existing = cartItems.find(item => item.product.id === prodId);
+                        if (existing) {
+                            existing.quantity++;
+                        } else {
+                            cartItems.push({ product, quantity: 1 });
+                        }
+                        updateCartUI();
+
+                        // Petit feedback haptique / visuel
+                        addBtn.style.transform = 'scale(1.2)';
+                        setTimeout(() => addBtn.style.transform = '', 150);
+                    }
+                }
+            });
+
+            // Ouvrir / Fermer le tiroir du panier
+            btnOpenCart.addEventListener('click', () => {
+                cartModal.classList.add('open');
+            });
+
+            btnCloseCart.addEventListener('click', () => {
+                cartModal.classList.remove('open');
+            });
+
+            cartModal.addEventListener('click', (e) => {
+                if (e.target === cartModal) cartModal.classList.remove('open');
+            });
+
+            // Boutons quantité dans le panier
+            cartItemsList.addEventListener('click', (e) => {
+                const decBtn = e.target.closest('.btn-decrease-qty');
+                const incBtn = e.target.closest('.btn-increase-qty');
+
+                if (decBtn) {
+                    const id = decBtn.getAttribute('data-product-id');
+                    const idx = cartItems.findIndex(i => i.product.id === id);
+                    if (idx > -1) {
+                        if (cartItems[idx].quantity > 1) {
+                            cartItems[idx].quantity--;
+                        } else {
+                            cartItems.splice(idx, 1);
+                        }
+                        updateCartUI();
+                    }
+                }
+
+                if (incBtn) {
+                    const id = incBtn.getAttribute('data-product-id');
+                    const item = cartItems.find(i => i.product.id === id);
+                    if (item) {
+                        item.quantity++;
+                        updateCartUI();
+                    }
+                }
+            });
+
+            // Envoi de la commande sur WhatsApp
+            btnConfirmOrder.addEventListener('click', () => {
+                if (cartItems.length === 0) return;
+
+                const nameInput = document.getElementById('order-customer-name').value.trim();
+                const phoneInput = document.getElementById('order-customer-phone').value.trim();
+                const notesInput = document.getElementById('order-customer-notes').value.trim();
+
+                const waPhone = (biz.whatsapp || biz.phone || '').replace(/[^0-9]/g, '');
+                if (!waPhone) {
+                    alert('Le numéro WhatsApp de cet établissement n\'est pas configuré.');
+                    return;
+                }
+
+                const totalPrice = cartItems.reduce((acc, item) => acc + (item.product.sale_price * item.quantity), 0);
+
+                let message = `*COMMANDE EN LIGNE — ${biz.name.toUpperCase()}*\n`;
+                message += `------------------------------------\n`;
+                cartItems.forEach(item => {
+                    const sub = item.product.sale_price * item.quantity;
+                    message += `• *${item.quantity}x* ${item.product.name} — ${sub.toLocaleString()} ${curr}\n`;
+                });
+                message += `------------------------------------\n`;
+                message += `*TOTAL ESTIMÉ : ${totalPrice.toLocaleString()} ${curr}*\n\n`;
+
+                if (nameInput) message += `👤 *Client :* ${nameInput}\n`;
+                if (phoneInput) message += `📞 *Téléphone :* ${phoneInput}\n`;
+                if (notesInput) message += `📝 *Instructions / Date :* ${notesInput}\n`;
+
+                message += `\nMerci de confirmer la disponibilité et les modalités de paiement !`;
+
+                const url = `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
             });
         }
 

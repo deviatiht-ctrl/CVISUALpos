@@ -198,13 +198,75 @@
     height: calc(100vh - 120px);
     position: sticky;
     top: 96px;
+    z-index: 100;
+}
+
+.cart-mobile-close-btn {
+    display: none;
+    background: none;
+    border: none;
+    padding: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+/* Barre d'accès rapide Panier Mobile (Sticky floating bar) */
+.pos-mobile-cart-bar {
+    display: none;
 }
 
 @media (max-width: 840px) {
+    .pos-layout {
+        display: block;
+    }
+
+    .pos-mobile-cart-bar {
+        position: fixed;
+        bottom: 76px; /* Juste au-dessus de la barre Android de 68px */
+        left: 12px;
+        right: 12px;
+        background: #1B2A4A;
+        color: #FFFFFF;
+        padding: 10px 16px;
+        border-radius: var(--radius-full);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 9998;
+        transform: translateY(160%);
+        transition: transform var(--transition-smooth);
+    }
+
+    .pos-mobile-cart-bar.visible {
+        transform: translateY(0);
+    }
+
     .pos-cart-panel {
-        height: auto;
-        position: static;
-        margin-top: 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100vh;
+        max-height: 100vh;
+        width: 100%;
+        border-radius: 0;
+        z-index: 10001;
+        margin-top: 0;
+        transform: translateY(100%);
+        transition: transform var(--transition-smooth);
+        overflow-y: auto;
+    }
+
+    .pos-cart-panel.mobile-open {
+        transform: translateY(0);
+    }
+
+    .cart-mobile-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -365,6 +427,13 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+    .payment-methods-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
 }
 
 .payment-method-btn {

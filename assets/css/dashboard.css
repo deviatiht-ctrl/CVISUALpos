@@ -28,6 +28,25 @@
     margin-bottom: 24px;
 }
 
+@media (max-width: 540px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .kpi-card {
+        padding: 14px 12px;
+    }
+
+    .kpi-value {
+        font-size: 1.35rem;
+    }
+
+    .kpi-label {
+        font-size: 11.5px;
+    }
+}
+
 .kpi-card {
     background: #FFFFFF;
     border: 1px solid var(--border-color);

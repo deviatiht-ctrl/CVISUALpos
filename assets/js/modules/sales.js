@@ -85,16 +85,21 @@ export async function render(container, session) {
             </div>
 
             <!-- PANIER LATÉRAL -->
-            <div class="pos-cart-panel">
+            <div class="pos-cart-panel" id="pos-cart-panel">
                 <div class="cart-header">
                     <div class="cart-title">
                         <i data-lucide="shopping-cart"></i>
                         <span>Panier</span>
                         <span class="badge badge-info" id="cart-items-count">${cart.length}</span>
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" id="btn-clear-cart" style="padding:4px 8px;" title="Vider">
-                        <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
-                    </button>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-clear-cart" style="padding:4px 8px;" title="Vider">
+                            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                        </button>
+                        <button type="button" class="cart-mobile-close-btn" id="btn-close-mobile-cart" title="Fermer le panier">
+                            <i data-lucide="x" style="width:20px; height:20px;"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- SÉLECTION DU CLIENT -->
@@ -150,6 +155,18 @@ export async function render(container, session) {
                 </div>
             </div>
         </div>
+
+        <!-- BARRE D'ACCÈS RAPIDE PANIER MOBILE -->
+        <div class="pos-mobile-cart-bar" id="pos-mobile-cart-bar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge" style="background: var(--color-primary); color: #FFF; font-weight: 700;" id="mobile-cart-badge">0</span>
+                <span style="font-family: var(--font-heading); font-weight: 700; font-size: 14px;" id="mobile-cart-total-text">0.00 ${biz.primary_currency}</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-open-mobile-cart" style="padding: 6px 14px; font-weight: 700; border-radius: 999px;">
+                <span>Voir Panier</span>
+                <i data-lucide="chevron-up" style="width: 14px; height: 14px;"></i>
+            </button>
+        </div>
     `;
 
     // Attacher les écouteurs d'événements
@@ -187,6 +204,18 @@ async function loadCatalogData(businessId) {
 /**
  * Rendu HTML de la grille de produits
  */
+function getIconForProduct(product) {
+    const name = (product.name || '').toLowerCase();
+    const desc = (product.description || '').toLowerCase();
+    const text = name + ' ' + desc;
+
+    if (text.includes('coiff') || text.includes('tiss') || text.includes('braid') || text.includes('cheveu')) return 'scissors';
+    if (text.includes('ongl') || text.includes('manucure') || text.includes('vernis') || text.includes('pedicure') || text.includes('pédicure')) return 'sparkles';
+    if (text.includes('visage') || text.includes('massage') || text.includes('soin') || text.includes('spa')) return 'heart';
+    if (text.includes('huile') || text.includes('shamp') || text.includes('crème') || text.includes('lotion') || text.includes('kit')) return 'package';
+    return 'package';
+}
+
 function renderProductsGridHTML(products) {
     let filtered = products;
 
@@ -223,7 +252,9 @@ function renderProductsGridHTML(products) {
                 ${p.image_url ? `
                     <img src="${p.image_url}" alt="${p.name}" loading="lazy" />
                 ` : `
-                    <i data-lucide="package" style="width:36px; height:36px; color:#CBD5E1;"></i>
+                    <div style="width:40px; height:40px; border-radius:50%; background:#FFF; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; color:var(--color-primary); box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                        <i data-lucide="${getIconForProduct(p)}" style="width:20px; height:20px;"></i>
+                    </div>
                 `}
             </div>
             <div class="product-card-name">${p.name}</div>
@@ -292,7 +323,25 @@ function updateCartTotals(biz) {
     if (discEl) discEl.textContent = `-${discountVal.toFixed(2)} ${curr}`;
     if (taxEl) taxEl.textContent = `+${taxVal.toFixed(2)} ${curr}`;
     if (totEl) totEl.textContent = `${total.toFixed(2)} ${curr}`;
-    if (countEl) countEl.textContent = cart.reduce((acc, i) => acc + i.qty, 0);
+    
+    const totalCount = cart.reduce((acc, i) => acc + i.qty, 0);
+    if (countEl) countEl.textContent = totalCount;
+
+    // Mise à jour de la barre flottante mobile
+    const mobCount = document.getElementById('mobile-cart-badge');
+    const mobTot = document.getElementById('mobile-cart-total-text');
+    const mobBar = document.getElementById('pos-mobile-cart-bar');
+    if (mobCount) mobCount.textContent = totalCount;
+    if (mobTot) mobTot.textContent = `${total.toFixed(2)} ${curr}`;
+    if (mobBar) {
+        if (totalCount > 0) {
+            mobBar.classList.add('visible');
+        } else {
+            mobBar.classList.remove('visible');
+            const cartPanel = document.getElementById('pos-cart-panel');
+            if (cartPanel) cartPanel.classList.remove('mobile-open');
+        }
+    }
 
     return { subtotal, discountVal, taxVal, total };
 }
@@ -461,8 +510,27 @@ function setupEventListeners(container, biz) {
             toast.warning('Panier vide', 'Ajoutez des articles avant d\'encaisser.');
             return;
         }
+        const cartPanel = container.querySelector('#pos-cart-panel');
+        if (cartPanel) cartPanel.classList.remove('mobile-open');
         openPaymentModal(biz);
     };
+
+    // 11. Gestion Panier Mobile (Tiroir tactile)
+    const btnOpenMob = container.querySelector('#btn-open-mobile-cart');
+    const btnCloseMob = container.querySelector('#btn-close-mobile-cart');
+    const cartPanelEl = container.querySelector('#pos-cart-panel');
+
+    if (btnOpenMob && cartPanelEl) {
+        btnOpenMob.onclick = () => {
+            cartPanelEl.classList.add('mobile-open');
+        };
+    }
+
+    if (btnCloseMob && cartPanelEl) {
+        btnCloseMob.onclick = () => {
+            cartPanelEl.classList.remove('mobile-open');
+        };
+    }
 
     // Raccourcis clavier (F2, F4, F9)
     window.onkeydown = (e) => {

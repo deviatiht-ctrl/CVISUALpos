@@ -1,53 +1,93 @@
 /* ==============================================================================
-   CVISUAL POS — catalogue.css
-   Styles de la vitrine et du catalogue public en ligne (/catalogue.html?e=slug)
+   CVISUAL POS — catalogue.css (Version Haute Fidélité & 100% Responsive)
+   Vitrine et catalogue public en ligne e-commerce & prestations
    ============================================================================== */
+
+.catalogue-page-wrapper {
+    min-height: 100vh;
+    background: #FFFFFF;
+    color: var(--text-main);
+    padding-bottom: 90px;
+}
 
 .catalogue-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 24px 60px 24px;
+    padding: 16px 20px;
     text-align: left;
 }
 
-/* Bannière & En-tête Boutique */
+@media (max-width: 640px) {
+    .catalogue-container {
+        padding: 12px 14px;
+    }
+}
+
+/* ==========================================================================
+   1. HERO BANNER & PROFIL VITRINE
+   ========================================================================== */
 .catalogue-hero {
     background: #FFFFFF;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: var(--shadow-card);
-    margin-bottom: 32px;
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
 }
 
 .catalogue-cover {
     width: 100%;
-    height: 200px;
-    background: linear-gradient(135deg, #1B2A4A, #0F172A);
+    height: 150px;
+    background: linear-gradient(135deg, #FFF7ED 0%, #F8FAFC 50%, #EFF6FF 100%);
     position: relative;
     background-size: cover;
     background-position: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 640px) {
+    .catalogue-cover {
+        height: 110px;
+    }
 }
 
 .catalogue-profile-bar {
-    padding: 0 24px 24px 24px;
+    padding: 0 24px 20px 24px;
     display: flex;
     align-items: flex-end;
-    gap: 20px;
+    gap: 18px;
     position: relative;
-    margin-top: -50px;
+    margin-top: -44px;
     flex-wrap: wrap;
 }
 
+@media (max-width: 640px) {
+    .catalogue-profile-bar {
+        padding: 0 16px 16px 16px;
+        margin-top: -36px;
+        gap: 14px;
+    }
+}
+
 .catalogue-logo-wrap {
-    width: 100px;
-    height: 100px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: #FFFFFF;
-    border: 4px solid #FFFFFF;
-    box-shadow: var(--shadow-card);
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .catalogue-logo-wrap {
+        width: 72px;
+        height: 72px;
+    }
 }
 
 .catalogue-logo-img {
@@ -56,43 +96,126 @@
     object-fit: cover;
 }
 
+.catalogue-logo-fallback {
+    width: 100%;
+    height: 100%;
+    background: #FFF7ED;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 800;
+}
+
 .catalogue-info {
     flex: 1;
-    min-width: 260px;
+    min-width: 240px;
+}
+
+.catalogue-header-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.badge-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid #BFDBFE;
+}
+
+.badge-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    background: #ECFDF5;
+    color: #059669;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid #A7F3D0;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    display: inline-block;
+    animation: pulse 2s infinite;
 }
 
 .catalogue-title {
-    font-size: 1.8rem;
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--color-navy);
+    line-height: 1.2;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .catalogue-title {
+        font-size: 1.35rem;
+    }
 }
 
 .catalogue-slogan {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
-    margin-top: 2px;
+    margin-top: 4px;
+    line-height: 1.4;
 }
 
-.catalogue-social-links {
+.catalogue-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.catalogue-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.catalogue-actions-bar {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 12px;
+    margin-top: 14px;
 }
 
 .social-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
+    padding: 7px 14px;
     border-radius: var(--radius-full);
     border: 1px solid var(--border-color);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     color: var(--color-navy);
     background: #FFFFFF;
     text-decoration: none;
     transition: all var(--transition-fast);
+    cursor: pointer;
 }
 
 .social-pill:hover {
@@ -109,9 +232,124 @@
 
 .social-pill.wa-btn:hover {
     background: #1EBE5D;
+    color: #FFFFFF;
 }
 
-/* Grille de Produits Publique */
+/* ==========================================================================
+   2. RECHERCHE ET CATÉGORIES
+   ========================================================================== */
+.catalogue-filters-wrap {
+    margin-bottom: 24px;
+}
+
+.catalogue-search-box {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.catalogue-search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-light);
+    pointer-events: none;
+}
+
+.catalogue-search-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 16px 0 42px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--text-main);
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.catalogue-search-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.category-pills-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.category-pills-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-filter-pill {
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    background: #FFFFFF;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.cat-filter-pill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.cat-filter-pill.active {
+    background: var(--color-navy);
+    color: #FFFFFF;
+    border-color: var(--color-navy);
+}
+
+/* ==========================================================================
+   3. GRILLE DE PRODUITS (RESPONSIVE 2/3/4 COLONNES)
+   ========================================================================== */
+.catalogue-products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+@media (max-width: 1080px) {
+    .catalogue-products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .catalogue-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 340px) {
+    .catalogue-products-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* CARTE PRODUIT */
 .catalogue-product-card {
     background: #FFFFFF;
     border: 1px solid var(--border-color);
@@ -119,60 +357,429 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-subtle);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     text-align: left;
+    position: relative;
 }
 
 .catalogue-product-card:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.06);
+    border-color: rgba(249, 115, 22, 0.35);
+}
+
+/* Image et Placeholder élégant */
+.catalogue-card-media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #F8FAFC;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .catalogue-card-img {
     width: 100%;
-    aspect-ratio: 1 / 1;
+    height: 100%;
     object-fit: cover;
-    background: var(--bg-muted);
+    transition: transform 0.3s ease;
 }
 
+.catalogue-product-card:hover .catalogue-card-img {
+    transform: scale(1.03);
+}
+
+/* PLACEHOLDER ÉLÉGANT QUAND IL N'Y A PAS D'IMAGE (FINI LES BLOCS ORANGES GÉANTS) */
+.catalogue-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.placeholder-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.placeholder-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+/* Corps de la carte */
 .catalogue-card-body {
-    padding: 16px;
+    padding: 12px 14px 14px 14px;
     display: flex;
     flex-direction: column;
     flex: 1;
 }
 
-.catalogue-product-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--color-navy);
-    margin-bottom: 6px;
+@media (max-width: 640px) {
+    .catalogue-card-body {
+        padding: 10px 11px 12px 11px;
+    }
 }
 
-.catalogue-product-desc {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.4;
-    margin-bottom: 12px;
+.catalogue-product-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    line-height: 1.3;
+    margin-bottom: 4px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
+@media (max-width: 640px) {
+    .catalogue-product-name {
+        font-size: 12.5px;
+    }
+}
+
+.catalogue-product-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.35;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    .catalogue-product-desc {
+        display: none; /* Masqué sur petit mobile pour garder les cartes compactes et nettes */
+    }
+}
+
 .catalogue-card-footer {
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 8px;
     border-top: 1px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+}
+
+.catalogue-price-box {
+    display: flex;
+    flex-direction: column;
 }
 
 .catalogue-price {
     font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 800;
     color: var(--color-primary);
+}
+
+@media (max-width: 640px) {
+    .catalogue-price {
+        font-size: 13px;
+    }
+}
+
+.btn-add-cart-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FFF7ED;
+    border: 1px solid rgba(249, 115, 22, 0.25);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.btn-add-cart-mini:hover {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    transform: scale(1.05);
+}
+
+.btn-add-cart-mini:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   4. PANIER FLOTTANT & COMMANDE WHATSAPP MULTI-ARTICLES
+   ========================================================================== */
+.catalogue-floating-cart-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    width: calc(100% - 32px);
+    max-width: 520px;
+    background: #1B2A4A;
+    color: #FFFFFF;
+    padding: 12px 18px;
+    border-radius: var(--radius-full);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 9999;
+    transition: transform var(--transition-smooth);
+}
+
+.catalogue-floating-cart-bar.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.cart-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cart-bar-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.cart-bar-total-label {
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+.cart-bar-total-amount {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.btn-cart-bar-checkout {
+    background: #25D366;
+    color: #FFFFFF;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.btn-cart-bar-checkout:hover {
+    background: #1EBE5D;
+}
+
+/* ==========================================================================
+   5. MODALE TIROIR DU PANIER WHATSAPP (BOTTOM SHEET MOBILE)
+   ========================================================================== */
+.cart-sheet-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-smooth);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.cart-sheet-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cart-sheet-dialog {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 540px;
+    max-height: 85vh;
+    border-radius: 24px 24px 0 0;
+    box-shadow: var(--shadow-modal);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform var(--transition-smooth);
+    text-align: left;
+}
+
+.cart-sheet-backdrop.open .cart-sheet-dialog {
+    transform: translateY(0);
+}
+
+.cart-sheet-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-sheet-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-sheet-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.cart-sheet-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.cart-sheet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    gap: 12px;
+}
+
+.cart-sheet-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--color-navy);
+}
+
+.cart-sheet-item-price {
+    font-size: 12px;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.cart-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.btn-qty:hover {
+    background: var(--bg-muted);
+}
+
+.cart-sheet-form {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cart-sheet-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-subtle);
+    background: #FAFAFA;
+}
+
+.cart-sheet-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.cart-sheet-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.cart-sheet-total-val {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-primary);
+}
+
+.btn-send-wa-order {
+    width: 100%;
+    height: 48px;
+    background: #25D366;
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+    transition: background var(--transition-fast);
+}
+
+.btn-send-wa-order:hover {
+    background: #1EBE5D;
 }
