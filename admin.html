@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cvisual POS — Administration Plateforme</title>
+
+    <!-- Typographie : DM Sans & Syne -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+
+    <!-- CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- EN-TÊTE ADMIN -->
+    <header class="admin-header">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: #FFF7ED; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="shield" style="width: 22px; height: 22px; color: var(--color-primary);"></i>
+            </div>
+            <div>
+                <div style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--color-navy);">
+                    Cvisual POS • Super-Administration
+                </div>
+                <div style="font-size: 11.5px; color: var(--text-muted);" id="admin-user-info">Vérification des droits...</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="app.html" class="btn btn-outline btn-sm">
+                <i data-lucide="arrow-left"></i>
+                <span>Accès Application POS</span>
+            </a>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-admin-logout" style="color: var(--color-danger); border-color: #FECACA;">
+                <i data-lucide="log-out"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="app-container" style="padding-top: 32px;">
+        <!-- NAVIGATION ONGLETS ADMIN -->
+        <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-view-biz">
+                <i data-lucide="store"></i>
+                <span>Modération des Entreprises</span>
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-view-stats">
+                <i data-lucide="bar-chart-2"></i>
+                <span>Statistiques Globales</span>
+            </button>
+        </div>
+
+        <!-- CONTENEUR PRINCIPAL ADMIN -->
+        <div id="admin-content-root"></div>
+
+        <div class="brand-signature">
+            Designed by Cvisual • Console d'administration centrale
+        </div>
+    </main>
+
+    <script type="module">
+        import { checkAdminAccess } from './assets/js/admin/admin-auth.js';
+        import { renderAdminBusinesses } from './assets/js/admin/admin-businesses.js';
+        import { renderAdminDashboard } from './assets/js/admin/admin-dashboard.js';
+        import { logout } from './assets/js/auth.js';
+
+        async function initAdmin() {
+            const adminSession = await checkAdminAccess();
+            if (!adminSession) return;
+
+            document.getElementById('admin-user-info').textContent = 
+                `Connecté : ${adminSession.admin.full_name || adminSession.admin.email} (Superadmin)`;
+
+            const root = document.getElementById('admin-content-root');
+
+            // Afficher par défaut la gestion des entreprises
+            await renderAdminBusinesses(root);
+
+            const btnBiz = document.getElementById('btn-view-biz');
+            const btnStats = document.getElementById('btn-view-stats');
+
+            btnBiz.onclick = async () => {
+                btnBiz.className = 'btn btn-primary btn-sm';
+                btnStats.className = 'btn btn-outline btn-sm';
+                await renderAdminBusinesses(root);
+            };
+
+            btnStats.onclick = async () => {
+                btnStats.className = 'btn btn-primary btn-sm';
+                btnBiz.className = 'btn btn-outline btn-sm';
+                await renderAdminDashboard(root);
+            };
+
+            document.getElementById('btn-admin-logout').onclick = () => logout();
+            lucide.createIcons();
+        }
+
+        window.addEventListener('DOMContentLoaded', initAdmin);
+    </script>
+</body>
+</html>

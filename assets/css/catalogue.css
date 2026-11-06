@@ -1,0 +1,178 @@
+/* ==============================================================================
+   CVISUAL POS — catalogue.css
+   Styles de la vitrine et du catalogue public en ligne (/catalogue.html?e=slug)
+   ============================================================================== */
+
+.catalogue-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 24px 60px 24px;
+    text-align: left;
+}
+
+/* Bannière & En-tête Boutique */
+.catalogue-hero {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 32px;
+}
+
+.catalogue-cover {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #1B2A4A, #0F172A);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.catalogue-profile-bar {
+    padding: 0 24px 24px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    position: relative;
+    margin-top: -50px;
+    flex-wrap: wrap;
+}
+
+.catalogue-logo-wrap {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 4px solid #FFFFFF;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.catalogue-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.catalogue-info {
+    flex: 1;
+    min-width: 260px;
+}
+
+.catalogue-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-navy);
+}
+
+.catalogue-slogan {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.catalogue-social-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.social-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-navy);
+    background: #FFFFFF;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.social-pill:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.social-pill.wa-btn {
+    background: #25D366;
+    color: #FFFFFF;
+    border-color: #25D366;
+}
+
+.social-pill.wa-btn:hover {
+    background: #1EBE5D;
+}
+
+/* Grille de Produits Publique */
+.catalogue-product-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-subtle);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    text-align: left;
+}
+
+.catalogue-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card);
+}
+
+.catalogue-card-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: var(--bg-muted);
+}
+
+.catalogue-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.catalogue-product-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-bottom: 6px;
+}
+
+.catalogue-product-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.catalogue-card-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.catalogue-price {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}

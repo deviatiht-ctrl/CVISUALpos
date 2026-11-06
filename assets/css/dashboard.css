@@ -1,0 +1,169 @@
+/* ==============================================================================
+   CVISUAL POS — dashboard.css
+   Tableau de bord adaptatif du commerce & métriques instantanées
+   ============================================================================== */
+
+.dashboard-hero {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.dashboard-greeting {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--color-navy);
+}
+
+.dashboard-subtext {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Grille des Indicateurs Clés (KPIs) */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    text-align: left;
+}
+
+.kpi-card:hover {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-2px);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.kpi-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.kpi-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-navy);
+}
+
+.kpi-value {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-navy);
+    line-height: 1.2;
+}
+
+.kpi-footer {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.trend-up {
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.trend-down {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+/* Checklist Onboarding guidé */
+.onboarding-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-subtle);
+    text-align: left;
+}
+
+.onboarding-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-muted);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 14px 0 20px 0;
+}
+
+.onboarding-progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.onboarding-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.onboarding-step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-subtle);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--color-navy);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.onboarding-step-item:hover {
+    border-color: var(--color-primary);
+    background: #FFFFFF;
+}
+
+.onboarding-step-item.completed {
+    color: var(--color-success);
+    background: var(--color-success-bg);
+    border-color: var(--color-success-border);
+}
+
+/* Grille principale Graphique & Activité */
+.dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .dashboard-main-grid {
+        grid-template-columns: 1fr;
+    }
+}

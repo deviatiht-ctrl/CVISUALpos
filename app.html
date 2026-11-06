@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cvisual POS — Point de Vente Professionnel</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F97316">
+    <link rel="icon" type="image/svg+xml" href="assets/img/logo-placeholder.svg">
+
+    <!-- Typographie : DM Sans (Corps) & Syne (Titres) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Feuilles de Styles CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/mobile-nav.css">
+    <link rel="stylesheet" href="assets/css/pos.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/receipt.css">
+
+    <!-- CDN Librairies Officielles -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <style>
+        /* Overlay de Verrouillage Rapide PIN */
+        .lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9999999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .lock-box {
+            background: #FFFFFF;
+            border-radius: var(--radius-xl);
+            padding: 36px 32px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow-modal);
+        }
+
+        .pin-display {
+            font-size: 32px;
+            letter-spacing: 8px;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            height: 52px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            width: 100%;
+        }
+
+        .pin-display:focus {
+            border-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- RACINE DE NAVIGATION FLOTTANTE DESKTOP & BOTTOM BAR MOBILE -->
+    <div id="cvisual-navbar-root"></div>
+
+    <!-- CONTENEUR DU CONTENU SPA PRINCIPAL -->
+    <main class="app-container">
+        <div id="app-main-content">
+            <!-- Injecté dynamiquement par router.js -->
+        </div>
+
+        <div class="brand-signature">
+            Designed by Cvisual • Solution POS Multi-Entreprises
+        </div>
+    </main>
+
+    <!-- OVERLAY VERROUILLAGE PIN RAPIDE -->
+    <div class="lock-overlay" id="cvisual-lock-overlay">
+        <div class="lock-box">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FFF7ED; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                <i data-lucide="lock" style="width: 28px; height: 28px; color: #EA580C;"></i>
+            </div>
+            <h2 style="font-size: 20px; color: var(--color-navy); margin-bottom: 6px;">Écran Verrouillé</h2>
+            <p style="font-size: 13.5px; color: var(--text-muted);">Saisissez votre code PIN rapide pour déverrouiller le poste.</p>
+
+            <form id="form-unlock-pin">
+                <input type="password" id="lock-pin-input" class="pin-display" maxlength="6" placeholder="••••" autofocus autocomplete="off">
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i data-lucide="unlock"></i>
+                    <span>Déverrouiller</span>
+                </button>
+            </form>
+            <div style="margin-top: 18px;">
+                <button type="button" onclick="import('./assets/js/auth.js').then(m => m.logout())" style="background: none; border: none; font-size: 13px; color: var(--text-muted); cursor: pointer; text-decoration: underline;">
+                    Se déconnecter complètement
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE DÉMARRAGE ET ROUTAGE -->
+    <script type="module">
+        import { getSessionUser, unlockScreen } from './assets/js/auth.js';
+        import { initNavbar } from './assets/js/navbar.js';
+        import { navigateTo } from './assets/js/router.js';
+        import { syncNow, updateSyncBadge } from './assets/js/sync.js';
+
+        // Initialisation de la session
+        async function bootApp() {
+            const session = await getSessionUser();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Initialiser Navbar
+            initNavbar(session);
+
+            // Charger la route demandée
+            const hash = window.location.hash || '#pos';
+            await navigateTo(hash);
+
+            // Initialiser synchronisation
+            await updateSyncBadge();
+            if (navigator.onLine) {
+                syncNow();
+            }
+
+            // Gestion déverrouillage PIN
+            const unlockForm = document.getElementById('form-unlock-pin');
+            if (unlockForm) {
+                unlockForm.onsubmit = (e) => {
+                    e.preventDefault();
+                    const pin = document.getElementById('lock-pin-input').value;
+                    unlockScreen(pin);
+                };
+            }
+
+            // Enregistrement Service Worker PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(() => console.log('[Cvisual POS] Service Worker actif.'))
+                    .catch(err => console.warn('[Cvisual POS] SW échec:', err));
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', bootApp);
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+/* ==============================================================================
+   CVISUAL POS — variables.css
+   Variables fondamentales du design system, palette de couleurs, typographie, ombres
+   ============================================================================== */
+
+:root {
+    /* Palette Principale */
+    --color-primary: #F97316;
+    --color-primary-hover: #EA580C;
+    --color-primary-light: #FFF7ED;
+    --color-primary-border: rgba(249, 115, 22, 0.18);
+
+    /* Secondaire & Neutres Chauds */
+    --color-navy: #1B2A4A;
+    --color-navy-dark: #0F172A;
+    --color-navy-light: #334155;
+
+    /* Arrière-plans & Cartes (Blanc strict #FFFFFF imposé) */
+    --bg-page: #FFFFFF;
+    --bg-surface: #FFFFFF;
+    --bg-subtle: #F8FAFC;
+    --bg-muted: #F1F5F9;
+
+    /* Typographie */
+    --font-heading: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+
+    /* Couleurs de Texte */
+    --text-main: #1B2A4A;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+    --text-white: #FFFFFF;
+
+    /* Bordures & Séparateurs */
+    --border-color: #E2E8F0;
+    --border-subtle: #F1F5F9;
+    --border-focus: #F97316;
+
+    /* États & Alertes sobres */
+    --color-success: #10B981;
+    --color-success-bg: #ECFDF5;
+    --color-success-border: #A7F3D0;
+
+    --color-danger: #EF4444;
+    --color-danger-bg: #FEF2F2;
+    --color-danger-border: #FECACA;
+
+    --color-warning: #F59E0B;
+    --color-warning-bg: #FFFBEB;
+    --color-warning-border: #FDE68A;
+
+    --color-info: #3B82F6;
+    --color-info-bg: #EFF6FF;
+    --color-info-border: #BFDBFE;
+
+    /* Rayons de courbure (Border Radius) */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+
+    /* Ombres subtiles */
+    --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+    /* Grille et Espacements */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-smooth: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}

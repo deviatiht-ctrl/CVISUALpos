@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue Public — Cvisual POS</title>
+
+    <!-- Typographie : DM Sans & Syne -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/catalogue.css">
+
+    <!-- CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <div class="catalogue-container" id="catalogue-root">
+        <div style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
+            <i data-lucide="loader" style="animation: spin 1s linear infinite; width: 32px; height: 32px;"></i>
+            <div style="margin-top: 12px; font-weight: 600;">Chargement du catalogue...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './assets/js/supabase.js';
+
+        async function initCatalogue() {
+            const root = document.getElementById('catalogue-root');
+            const urlParams = new URLSearchParams(window.location.search);
+            const slug = urlParams.get('e');
+
+            if (!slug) {
+                root.innerHTML = `
+                    <div class="c-card" style="padding: 48px; max-width: 500px; margin: 60px auto;">
+                        <h2 style="font-size: 20px; margin-bottom: 8px;">Catalogue introuvable</h2>
+                        <p style="color: var(--text-muted); font-size: 14px;">Aucun paramètre d'entreprise n'a été spécifié dans l'adresse URL.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            try {
+                // 1. Charger l'entreprise approuvée avec catalogue actif
+                const { data: biz, error: bizErr } = await db.from('cvisual_businesses')
+                    .select('*')
+                    .eq('slug', slug)
+                    .eq('status', 'approved')
+                    .maybeSingle();
+
+                if (bizErr || !biz) {
+                    root.innerHTML = `
+                        <div class="c-card" style="padding: 48px; max-width: 500px; margin: 60px auto;">
+                            <h2 style="font-size: 20px; margin-bottom: 8px;">Établissement non disponible</h2>
+                            <p style="color: var(--text-muted); font-size: 14px;">Cette vitrine en ligne n'est pas encore publiée ou est momentanément suspendue.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                document.title = `${biz.name} — Catalogue Officiel`;
+
+                // 2. Charger les catégories et produits visibles
+                const [catsRes, prodsRes] = await Promise.all([
+                    db.from('cvisual_categories').select('*').eq('business_id', biz.id).eq('is_active', true).order('sort_order'),
+                    db.from('cvisual_products').select('*').eq('business_id', biz.id).eq('is_archived', false).eq('is_visible_in_catalogue', true).order('created_at', { ascending: false })
+                ]);
+
+                const categories = catsRes.data || [];
+                const products = prodsRes.data || [];
+                const curr = biz.primary_currency || 'HTG';
+
+                root.innerHTML = `
+                    <!-- BANNIÈRE & PROFIL VITRINE -->
+                    <div class="catalogue-hero">
+                        <div class="catalogue-cover" style="${biz.cover_url ? `background-image: url('${biz.cover_url}');` : ''}"></div>
+                        <div class="catalogue-profile-bar">
+                            <div class="catalogue-logo-wrap">
+                                <img src="${biz.logo_url || 'assets/img/logo-placeholder.svg'}" alt="Logo" class="catalogue-logo-img">
+                            </div>
+                            <div class="catalogue-info">
+                                <h1 class="catalogue-title">${biz.name}</h1>
+                                ${biz.slogan ? `<div class="catalogue-slogan">${biz.slogan}</div>` : ''}
+                                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                                    ${biz.address ? `${biz.address}, ` : ''}${biz.city || 'Haïti'}
+                                </div>
+                                <div class="catalogue-social-links">
+                                    ${biz.phone ? `
+                                        <a href="tel:${biz.phone}" class="social-pill">
+                                            <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
+                                            <span>Appeler</span>
+                                        </a>
+                                    ` : ''}
+                                    ${biz.whatsapp ? `
+                                        <a href="https://wa.me/${biz.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" class="social-pill wa-btn">
+                                            <i data-lucide="message-square" style="width: 14px; height: 14px;"></i>
+                                            <span>WhatsApp</span>
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECHERCHE ET FILTRES CATÉGORIES -->
+                    <div style="margin-bottom: 24px;">
+                        <div class="search-input-wrapper" style="margin-bottom: 16px;">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="cat-search" class="form-control" placeholder="Rechercher un produit dans le catalogue...">
+                        </div>
+                        <div class="category-pills" id="cat-filter-pills">
+                            <button type="button" class="category-pill active" data-cat-id="">Tous les produits</button>
+                            ${categories.map(c => `
+                                <button type="button" class="category-pill" data-cat-id="${c.id}">${c.name}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- GRILLE PRODUITS DU CATALOGUE -->
+                    <div class="products-grid" id="cat-products-grid">
+                        ${renderCatalogProducts(products, curr, biz)}
+                    </div>
+
+                    <footer style="margin-top: 60px; padding: 24px 0; border-top: 1px solid var(--border-subtle); text-align: left; font-size: 12px; color: var(--text-light);">
+                        Designed by Cvisual • Catalogue en ligne pour commerces
+                    </footer>
+                `;
+
+                lucide.createIcons();
+                setupCatalogInteractions(products, curr, biz);
+
+            } catch (err) {
+                console.error(err);
+                root.innerHTML = `<div style="padding: 40px; text-align: left;">Erreur de chargement.</div>`;
+            }
+        }
+
+        function renderCatalogProducts(products, curr, biz) {
+            if (products.length === 0) {
+                return `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon"><i data-lucide="package-search"></i></div>
+                        <div class="empty-state-title">Aucun produit disponible</div>
+                        <div class="empty-state-desc">Les articles seront bientôt ajoutés à la vitrine.</div>
+                    </div>
+                `;
+            }
+
+            return products.map(p => `
+                <div class="catalogue-product-card" data-id="${p.id}">
+                    <img src="${p.image_url || 'assets/img/logo-placeholder.svg'}" alt="${p.name}" class="catalogue-card-img" loading="lazy">
+                    <div class="catalogue-card-body">
+                        <div class="catalogue-product-name">${p.name}</div>
+                        ${p.description ? `<div class="catalogue-product-desc">${p.description}</div>` : ''}
+                        <div class="catalogue-card-footer">
+                            <span class="catalogue-price">${Number(p.sale_price).toFixed(2)} ${curr}</span>
+                            <button type="button" class="btn btn-outline btn-sm btn-order-wa" data-name="${encodeURIComponent(p.name)}" data-price="${p.sale_price}" style="border-color: #25D366; color: #16A34A;">
+                                <i data-lucide="shopping-bag" style="width: 14px; height: 14px;"></i>
+                                <span>Commander</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupCatalogInteractions(allProducts, curr, biz) {
+            const searchInput = document.getElementById('cat-search');
+            const grid = document.getElementById('cat-products-grid');
+            const pills = document.querySelectorAll('.category-pill');
+
+            let activeCat = '';
+            let searchTerm = '';
+
+            function filter() {
+                let filtered = allProducts;
+                if (activeCat) filtered = filtered.filter(p => p.category_id === activeCat);
+                if (searchTerm) {
+                    const q = searchTerm.toLowerCase();
+                    filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)));
+                }
+                grid.innerHTML = renderCatalogProducts(filtered, curr, biz);
+                lucide.createIcons({ root: grid });
+            }
+
+            if (searchInput) {
+                searchInput.oninput = (e) => {
+                    searchTerm = e.target.value.trim();
+                    filter();
+                };
+            }
+
+            pills.forEach(p => {
+                p.onclick = () => {
+                    pills.forEach(item => item.classList.remove('active'));
+                    p.classList.add('active');
+                    activeCat = p.getAttribute('data-cat-id');
+                    filter();
+                };
+            });
+
+            // Bouton Commander sur WhatsApp
+            grid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-order-wa');
+                if (btn && biz.whatsapp) {
+                    const name = decodeURIComponent(btn.getAttribute('data-name'));
+                    const price = btn.getAttribute('data-price');
+                    const cleanPhone = biz.whatsapp.replace(/[^0-9]/g, '');
+                    const message = encodeURIComponent(`Bonjour, je souhaite commander l'article "${name}" au prix de ${price} ${curr} vu sur votre catalogue en ligne.`);
+                    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', initCatalogue);
+    </script>
+</body>
+</html>

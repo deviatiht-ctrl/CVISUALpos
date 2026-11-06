@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cvisual POS — Point de Vente & Gestion Multi-Entreprises</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F97316">
+    <link rel="icon" type="image/svg+xml" href="assets/img/logo-placeholder.svg">
+
+    <!-- Typographie : DM Sans (Corps) & Syne (Titres) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Styles CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <!-- CDN Librairies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #FFFFFF;
+        }
+
+        .auth-container {
+            max-width: 580px;
+            width: 100%;
+            margin: 40px auto;
+            padding: 24px;
+        }
+
+        .auth-brand-box {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 12px auto;
+            display: block;
+        }
+
+        .auth-title {
+            font-size: 26px;
+            color: var(--color-navy);
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        .auth-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
+            padding: 32px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--bg-muted);
+            border-radius: var(--radius-full);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .auth-tab-btn.active {
+            background: #FFFFFF;
+            color: var(--color-navy);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        /* Stepper d'inscription */
+        .stepper-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .step-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFFFF;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .step-indicator.active .step-circle {
+            background: var(--color-primary);
+            color: #FFFFFF;
+            border-color: var(--color-primary);
+        }
+
+        .step-indicator.completed .step-circle {
+            background: var(--color-success);
+            color: #FFFFFF;
+            border-color: var(--color-success);
+        }
+
+        .strength-meter {
+            height: 4px;
+            border-radius: 999px;
+            background: var(--bg-muted);
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+        }
+
+        .auth-footer {
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-light);
+            border-top: 1px solid var(--border-subtle);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <main class="auth-container">
+            <!-- LOGO & TITRE -->
+            <div class="auth-brand-box">
+                <img src="assets/img/logo-placeholder.svg" alt="Cvisual POS" class="auth-logo">
+                <h1 class="auth-title">Cvisual POS</h1>
+                <p class="auth-subtitle">Gestion commerciale intelligente et point de vente multi-entreprises</p>
+            </div>
+
+            <!-- ONGLET CONNEXION / INSCRIPTION -->
+            <div class="auth-card">
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab-btn active" id="tab-login">Se Connecter</button>
+                    <button type="button" class="auth-tab-btn" id="tab-register">Créer une Entreprise</button>
+                </div>
+
+                <!-- SECTION 1 : FORMULAIRE DE CONNEXION -->
+                <div id="section-login">
+                    <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                        <button type="button" class="btn btn-outline btn-sm active" id="btn-login-mode-email" style="flex: 1;">Email & Mot de passe</button>
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-login-mode-code" style="flex: 1;">Code d'accès caissier</button>
+                    </div>
+
+                    <!-- 1.1 LOGIN EMAIL -->
+                    <form id="form-login-email">
+                        <div class="form-group">
+                            <label class="form-label">Adresse email professionnelle</label>
+                            <input type="email" id="login-email" class="form-control" placeholder="nom@entreprise.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;" id="btn-submit-login-email">
+                            <i data-lucide="log-in"></i>
+                            <span>Accéder à l'espace POS</span>
+                        </button>
+                    </form>
+
+                    <!-- 1.2 LOGIN CODE CAISSIER -->
+                    <form id="form-login-code" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Code d'accès confidentiel (6 chiffres)</label>
+                            <input type="password" id="login-code" class="form-control" placeholder="123456" maxlength="8" style="font-size: 20px; letter-spacing: 4px; text-align: center;" required>
+                            <span style="font-size: 12px; color: var(--text-muted); margin-top: 6px; display: block;">
+                                Code unique fourni par le responsable de votre établissement.
+                            </span>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;" id="btn-submit-login-code">
+                            <i data-lucide="key"></i>
+                            <span>Ouvrir la caisse</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- SECTION 2 : INSCRIPTION EN 5 ÉTAPES (STEPPER) -->
+                <div id="section-register" style="display: none;">
+                    <div class="stepper-header">
+                        <div class="step-indicator active" data-step="1">
+                            <div class="step-circle">1</div>
+                            <span>Compte</span>
+                        </div>
+                        <div class="step-indicator" data-step="2">
+                            <div class="step-circle">2</div>
+                            <span>Entreprise</span>
+                        </div>
+                        <div class="step-indicator" data-step="3">
+                            <div class="step-circle">3</div>
+                            <span>Contact</span>
+                        </div>
+                        <div class="step-indicator" data-step="4">
+                            <div class="step-circle">4</div>
+                            <span>Réglages</span>
+                        </div>
+                        <div class="step-indicator" data-step="5">
+                            <div class="step-circle">5</div>
+                            <span>Validation</span>
+                        </div>
+                    </div>
+
+                    <form id="form-stepper">
+                        <!-- ÉTAPE 1 : COMPTE PROPRIÉTAIRE -->
+                        <div class="step-content" id="step-1">
+                            <div class="form-group">
+                                <label class="form-label">Votre nom et prénom *</label>
+                                <input type="text" id="reg-owner-name" class="form-control" placeholder="Jean Dupont" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adresse email *</label>
+                                <input type="email" id="reg-email" class="form-control" placeholder="contact@boutique.ht" required autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mot de passe de sécurité *</label>
+                                <input type="password" id="reg-password" class="form-control" placeholder="Minimum 8 caractères" required>
+                                <div class="strength-meter">
+                                    <div class="strength-fill" id="strength-fill"></div>
+                                </div>
+                                <span id="strength-label" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Force du mot de passe</span>
+                            </div>
+                            <button type="button" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="goToStep(2)">
+                                Continuer vers l'entreprise →
+                            </button>
+                        </div>
+
+                        <!-- ÉTAPE 2 : ENTREPRISE -->
+                        <div class="step-content" id="step-2" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Nom de l'entreprise / Boutique *</label>
+                                <input type="text" id="reg-biz-name" class="form-control" placeholder="Ex: Mode & Style Caraïbes" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Type de commerce *</label>
+                                <select id="reg-biz-type" class="form-control">
+                                    <option value="clothing">Boutique / Vêtements & Mode</option>
+                                    <option value="grocery">Supermarché / Épicerie & Alimentation</option>
+                                    <option value="restaurant">Restaurant / Fast-food & Bar</option>
+                                    <option value="pharmacy">Pharmacie & Santé</option>
+                                    <option value="salon">Salon de beauté, Coiffure & Spa</option>
+                                    <option value="hardware">Quincaillerie & Pièces Auto</option>
+                                    <option value="electronics">Électronique, Téléphonie & Informatique</option>
+                                    <option value="other">Autre commerce général</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Slogan ou phrase d'accroche</label>
+                                <input type="text" id="reg-biz-slogan" class="form-control" placeholder="Ex: Le meilleur choix au quotidien">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="goToStep(1)">← Précédent</button>
+                                <button type="button" class="btn btn-primary" style="flex: 2;" onclick="goToStep(3)">Continuer →</button>
+                            </div>
+                        </div>
+
+                        <!-- ÉTAPE 3 : CONTACT & LOCALISATION -->
+                        <div class="step-content" id="step-3" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="form-label">Téléphone principal *</label>
+                                    <input type="tel" id="reg-biz-phone" class="form-control" placeholder="+509 3700 0000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Numéro WhatsApp</label>
+                                    <input type="tel" id="reg-biz-wa" class="form-control" placeholder="+509 3700 0000">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="form-label">Adresse physique *</label>
+                                    <input type="text" id="reg-biz-address" class="form-control" placeholder="Rue, N°..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Ville</label>
+                                    <input type="text" id="reg-biz-city" class="form-control" value="Pétion-Ville">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Numéro NIF / Identifiant fiscal (Optionnel)</label>
+                                <input type="text" id="reg-biz-taxid" class="form-control" placeholder="000-000-000-0">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="goToStep(2)">← Précédent</button>
+                                <button type="button" class="btn btn-primary" style="flex: 2;" onclick="goToStep(4)">Continuer →</button>
+                            </div>
+                        </div>
+
+                        <!-- ÉTAPE 4 : PARAMÈTRES MONÉTAIRES & DEVISES -->
+                        <div class="step-content" id="step-4" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="form-label">Devise principale *</label>
+                                    <select id="reg-curr-primary" class="form-control">
+                                        <option value="HTG" selected>Gourde Haïtienne (HTG)</option>
+                                        <option value="USD">Dollar US (USD)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Taux de change (USD → HTG)</label>
+                                    <input type="number" id="reg-exchange-rate" class="form-control" value="132.50" step="any">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Langue par défaut</label>
+                                <select id="reg-lang" class="form-control">
+                                    <option value="fr" selected>Français</option>
+                                    <option value="ht">Kreyòl Ayisyen</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="goToStep(3)">← Précédent</button>
+                                <button type="button" class="btn btn-primary" style="flex: 2;" onclick="goToStep(5)">Récapitulatif →</button>
+                            </div>
+                        </div>
+
+                        <!-- ÉTAPE 5 : RÉCAPITULATIF & SOUMISSION -->
+                        <div class="step-content" id="step-5" style="display: none;">
+                            <div style="background: var(--bg-subtle); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                                <div style="font-weight: 700; color: var(--color-navy); margin-bottom: 8px;">Récapitulatif de votre demande :</div>
+                                <div id="summary-preview" style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                                En soumettant cette demande, votre établissement sera soumis à l'approbation de l'administrateur Cvisual.
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="goToStep(4)">← Modifier</button>
+                                <button type="submit" class="btn btn-primary btn-lg" style="flex: 2;" id="btn-submit-registration">
+                                    <i data-lucide="send"></i>
+                                    <span>Envoyer ma demande</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <footer class="auth-footer">
+            Designed by Cvisual • Plateforme Point de Vente Multi-Entreprises
+        </footer>
+    </div>
+
+    <!-- Scripts ES Modules -->
+    <script type="module">
+        import { db } from './assets/js/supabase.js';
+        import { loginWithEmail, loginWithAccessCode, sha256 } from './assets/js/auth.js';
+        import { toast } from './assets/js/toast.js';
+
+        // Initialisation icônes Lucide
+        lucide.createIcons();
+
+        // Bascule Connexion / Inscription
+        const tabLogin = document.getElementById('tab-login');
+        const tabRegister = document.getElementById('tab-register');
+        const secLogin = document.getElementById('section-login');
+        const secRegister = document.getElementById('section-register');
+
+        tabLogin.onclick = () => {
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            secLogin.style.display = 'block';
+            secRegister.style.display = 'none';
+        };
+
+        tabRegister.onclick = () => {
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            secLogin.style.display = 'none';
+            secRegister.style.display = 'block';
+        };
+
+        // Modes de connexion (Email vs Code Caissier)
+        const btnModeEmail = document.getElementById('btn-login-mode-email');
+        const btnModeCode = document.getElementById('btn-login-mode-code');
+        const formLoginEmail = document.getElementById('form-login-email');
+        const formLoginCode = document.getElementById('form-login-code');
+
+        btnModeEmail.onclick = () => {
+            btnModeEmail.classList.add('active');
+            btnModeCode.classList.remove('active');
+            formLoginEmail.style.display = 'block';
+            formLoginCode.style.display = 'none';
+        };
+
+        btnModeCode.onclick = () => {
+            btnModeCode.classList.add('active');
+            btnModeEmail.classList.remove('active');
+            formLoginEmail.style.display = 'none';
+            formLoginCode.style.display = 'block';
+            document.getElementById('login-code').focus();
+        };
+
+        // Soumission Connexion Email
+        formLoginEmail.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-submit-login-email');
+            btn.disabled = true;
+            btn.innerHTML = 'Connexion en cours...';
+
+            await loginWithEmail(email, pass);
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="log-in"></i><span>Accéder à l'espace POS</span>`;
+            lucide.createIcons({ root: btn });
+        };
+
+        // Soumission Connexion Code Caissier
+        formLoginCode.onsubmit = async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('login-code').value;
+            const btn = document.getElementById('btn-submit-login-code');
+            btn.disabled = true;
+            btn.innerHTML = 'Vérification du code...';
+
+            await loginWithAccessCode(code);
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="key"></i><span>Ouvrir la caisse</span>`;
+            lucide.createIcons({ root: btn });
+        };
+
+        // Stepper Navigation
+        window.goToStep = function(stepNum) {
+            document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
+            const target = document.getElementById(`step-${stepNum}`);
+            if (target) target.style.display = 'block';
+
+            document.querySelectorAll('.step-indicator').forEach(ind => {
+                const s = parseInt(ind.getAttribute('data-step'));
+                ind.classList.remove('active', 'completed');
+                if (s === stepNum) ind.classList.add('active');
+                else if (s < stepNum) ind.classList.add('completed');
+            });
+
+            if (stepNum === 5) {
+                // Remplir le récapitulatif
+                const bizName = document.getElementById('reg-biz-name').value;
+                const bizType = document.getElementById('reg-biz-type').value;
+                const email = document.getElementById('reg-email').value;
+                const phone = document.getElementById('reg-biz-phone').value;
+                const curr = document.getElementById('reg-curr-primary').value;
+
+                document.getElementById('summary-preview').innerHTML = `
+                    <div>• <strong>Entreprise :</strong> ${bizName} (${bizType})</div>
+                    <div>• <strong>Email propriétaire :</strong> ${email}</div>
+                    <div>• <strong>Téléphone :</strong> ${phone}</div>
+                    <div>• <strong>Devise principale :</strong> ${curr}</div>
+                `;
+            }
+        };
+
+        // Force du mot de passe
+        const passInput = document.getElementById('reg-password');
+        const fill = document.getElementById('strength-fill');
+        const label = document.getElementById('strength-label');
+
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const colors = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981'];
+            const labels = ['Très faible', 'Moyen', 'Sécurisé', 'Très robuste'];
+
+            fill.style.width = (score * 25) + '%';
+            fill.style.backgroundColor = colors[score - 1] || '#EF4444';
+            label.textContent = labels[score - 1] || 'Saisissez au moins 8 caractères';
+        });
+
+        // Soumission finale de l'inscription
+        document.getElementById('form-stepper').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-registration');
+            btn.disabled = true;
+            btn.innerHTML = 'Création du compte...';
+
+            const ownerName = document.getElementById('reg-owner-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const bizName = document.getElementById('reg-biz-name').value.trim();
+            const bizType = document.getElementById('reg-biz-type').value;
+            const slogan = document.getElementById('reg-biz-slogan').value.trim();
+            const phone = document.getElementById('reg-biz-phone').value.trim();
+            const wa = document.getElementById('reg-biz-wa').value.trim();
+            const address = document.getElementById('reg-biz-address').value.trim();
+            const city = document.getElementById('reg-biz-city').value.trim();
+            const taxId = document.getElementById('reg-biz-taxid').value.trim();
+            const primaryCurr = document.getElementById('reg-curr-primary').value;
+            const exchangeRate = parseFloat(document.getElementById('reg-exchange-rate').value) || 132.50;
+
+            const slug = bizName.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '') + '-' + Math.floor(100 + Math.random() * 900);
+
+            try {
+                // 1. Inscription Auth Supabase
+                const { data: authData, error: authErr } = await db.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: ownerName } }
+                });
+
+                if (authErr) throw authErr;
+
+                const userId = authData.user?.id;
+
+                // 2. Création de l'entreprise (Statut pending)
+                const { data: newBiz, error: bizErr } = await db.from('cvisual_businesses').insert([{
+                    owner_id: userId,
+                    name: bizName,
+                    slug: slug,
+                    type: bizType,
+                    slogan: slogan || null,
+                    phone: phone,
+                    whatsapp: wa || null,
+                    address: address,
+                    city: city,
+                    tax_id: taxId || null,
+                    primary_currency: primaryCurr,
+                    exchange_rate: exchangeRate,
+                    status: 'pending'
+                }]).select().single();
+
+                if (bizErr) throw bizErr;
+
+                // 3. Création du propriétaire dans cvisual_staff
+                const rawOwnerCode = Math.floor(100000 + Math.random() * 900000).toString();
+                const ownerCodeHash = await sha256(rawOwnerCode);
+
+                await db.from('cvisual_staff').insert([{
+                    business_id: newBiz.id,
+                    auth_user_id: userId,
+                    name: ownerName,
+                    email: email,
+                    role: 'owner',
+                    status: 'active',
+                    access_code_hash: ownerCodeHash,
+                    access_code_hint: `**${rawOwnerCode.slice(-4)}`
+                }]);
+
+                toast.success('Demande transmise', 'Votre entreprise est en cours de validation.');
+                setTimeout(() => {
+                    window.location.href = 'app.html#pending';
+                }, 1500);
+
+            } catch (err) {
+                toast.error('Erreur inscription', err.message);
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="send"></i><span>Envoyer ma demande</span>`;
+                lucide.createIcons({ root: btn });
+            }
+        };
+    </script>
+</body>
+</html>
