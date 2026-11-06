@@ -36,7 +36,11 @@ export async function render(container, session) {
                 <h1 class="page-title">Point de Vente</h1>
                 <p class="page-subtitle">${biz.name} • Session Caissier : <strong>${session.staff?.name || 'Gérant'}</strong></p>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm" id="btn-online-orders" style="border-color: #F97316; color: #EA580C; background: #FFF7ED; font-weight: 700;">
+                    <i data-lucide="inbox"></i>
+                    <span>Commandes Web (<span id="online-orders-count">0</span>)</span>
+                </button>
                 <button type="button" class="btn btn-outline btn-sm" id="btn-held-sales">
                     <i data-lucide="archive"></i>
                     <span>En attente (<span id="held-count">${heldSales.length}</span>)</span>
@@ -532,6 +536,13 @@ function setupEventListeners(container, biz) {
         };
     }
 
+    // 12. Commandes Web & Vitrine
+    const btnOnlineOrders = container.querySelector('#btn-online-orders');
+    if (btnOnlineOrders) {
+        loadOnlineOrdersCount(biz.id);
+        btnOnlineOrders.onclick = () => openOnlineOrdersModal(biz);
+    }
+
     // Raccourcis clavier (F2, F4, F9)
     window.onkeydown = (e) => {
         if (e.key === 'F2') {
@@ -545,6 +556,199 @@ function setupEventListeners(container, biz) {
             container.querySelector('#btn-hold-cart').click();
         }
     };
+}
+
+/**
+ * Charge le nombre de commandes en ligne en attente
+ */
+async function loadOnlineOrdersCount(bizId) {
+    try {
+        if (!navigator.onLine || !db) return;
+        const { count, error } = await db.from('cvisual_online_orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('business_id', bizId)
+            .in('status', ['pending', 'confirmed', 'preparing']);
+
+        const countBadge = document.getElementById('online-orders-count');
+        if (countBadge && count !== null && !error) {
+            countBadge.textContent = count;
+        }
+    } catch (e) {
+        console.warn('Erreur chargement commandes en ligne:', e);
+    }
+}
+
+/**
+ * Modale de gestion des Commandes en Ligne entrantes
+ */
+async function openOnlineOrdersModal(biz) {
+    const existing = document.getElementById('cvisual-online-orders-modal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.id = 'cvisual-online-orders-modal';
+
+    overlay.innerHTML = `
+        <div class="modal-dialog" style="max-width: 680px;">
+            <div class="modal-header">
+                <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+                    <i data-lucide="inbox" style="color:var(--color-primary);"></i>
+                    <span>Commandes Reçues depuis la Vitrine Web</span>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-close-online-orders-modal" style="padding:4px 8px;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="online-orders-modal-body">
+                <div style="text-align:center; padding:30px 0;">
+                    <i data-lucide="loader" style="animation:spin 1s linear infinite;"></i>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    lucide.createIcons({ root: overlay });
+
+    const closeModal = () => {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    overlay.querySelector('#btn-close-online-orders-modal').onclick = closeModal;
+    overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+    // Charger les commandes
+    const body = overlay.querySelector('#online-orders-modal-body');
+    try {
+        const { data: orders, error } = await db.from('cvisual_online_orders')
+            .select('*, cvisual_online_order_items(*)')
+            .eq('business_id', biz.id)
+            .order('created_at', { ascending: false })
+            .limit(30);
+
+        if (error || !orders || orders.length === 0) {
+            body.innerHTML = `
+                <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                    <i data-lucide="inbox" style="width:40px; height:40px; margin:0 auto 12px auto; display:block; color:#CBD5E1;"></i>
+                    <div style="font-weight:700; font-size:15px; color:var(--color-navy); margin-bottom:4px;">Aucune commande en ligne</div>
+                    <div style="font-size:13px;">Les commandes passées par vos clients sur votre vitrine apparaîtront ici.</div>
+                </div>
+            `;
+            lucide.createIcons({ root: body });
+            return;
+        }
+
+        const statusBadges = {
+            'pending': { label: '🟡 En attente', next: 'confirmed', nextLabel: 'Confirmer' },
+            'confirmed': { label: '🔵 Confirmée', next: 'preparing', nextLabel: 'En préparation' },
+            'preparing': { label: '🟣 En préparation', next: 'ready', nextLabel: 'Prête' },
+            'ready': { label: '🟢 Prête', next: 'delivered', nextLabel: 'Terminée' },
+            'delivered': { label: '✅ Livrée', next: null, nextLabel: '' },
+            'cancelled': { label: '🔴 Annulée', next: null, nextLabel: '' }
+        };
+
+        body.innerHTML = orders.map(ord => {
+            const st = statusBadges[ord.status] || { label: ord.status, next: null };
+            const items = ord.cvisual_online_order_items || [];
+            const itemsText = items.map(i => `<strong>${i.quantity}x</strong> ${i.product_name} (${Number(i.total_price).toLocaleString()} ${ord.currency})`).join(' • ');
+
+            return `
+                <div class="c-card" style="padding:16px; margin-bottom:12px; border:1px solid var(--border-color); border-radius:14px;" data-order-id="${ord.id}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-navy); font-size:14px;">${ord.order_number}</span>
+                            <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${new Date(ord.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}</span>
+                        </div>
+                        <span class="badge" style="font-size:12px; font-weight:700;">${st.label}</span>
+                    </div>
+
+                    <div style="margin-bottom:8px; font-size:13.5px;">
+                        <strong>Client :</strong> ${ord.customer_name} • <a href="tel:${ord.customer_phone}" style="color:var(--color-primary); font-weight:600;">${ord.customer_phone}</a>
+                        ${ord.delivery_address ? `<div><span style="color:var(--text-muted); font-size:12px;">Adresse : ${ord.delivery_address}</span></div>` : ''}
+                    </div>
+
+                    <div style="background:#F8FAFC; border:1px solid #F1F5F9; border-radius:8px; padding:8px 12px; font-size:12.5px; margin-bottom:12px; line-height:1.4;">
+                        ${itemsText || 'Aucun article'}
+                        ${ord.notes ? `<div style="margin-top:4px; color:var(--text-muted); font-style:italic;">Notes : ${ord.notes}</div>` : ''}
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:var(--color-primary);">
+                            ${Number(ord.total_amount).toLocaleString()} ${ord.currency}
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            ${st.next ? `
+                                <button type="button" class="btn btn-outline btn-sm btn-update-order-status" data-id="${ord.id}" data-next-status="${st.next}">
+                                    <span>Passer à "${st.nextLabel}"</span>
+                                </button>
+                            ` : ''}
+                            <button type="button" class="btn btn-primary btn-sm btn-convert-to-pos" data-id="${ord.id}">
+                                <i data-lucide="shopping-cart" style="width:14px; height:14px;"></i>
+                                <span>Convertir en Vente POS</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        lucide.createIcons({ root: body });
+
+        // Mettre à jour statut
+        body.addEventListener('click', async (e) => {
+            const updateBtn = e.target.closest('.btn-update-order-status');
+            const convertBtn = e.target.closest('.btn-convert-to-pos');
+
+            if (updateBtn) {
+                const orderId = updateBtn.getAttribute('data-id');
+                const nextStatus = updateBtn.getAttribute('data-next-status');
+                updateBtn.disabled = true;
+
+                await db.from('cvisual_online_orders').update({ status: nextStatus }).eq('id', orderId);
+                toast.success('Statut mis à jour', `La commande est maintenant ${nextStatus}.`);
+                openOnlineOrdersModal(biz);
+                loadOnlineOrdersCount(biz.id);
+            }
+
+            if (convertBtn) {
+                const orderId = convertBtn.getAttribute('data-id');
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    // Charger les articles dans le panier POS
+                    const items = order.cvisual_online_order_items || [];
+                    cart = [];
+                    items.forEach(it => {
+                        const matchedProd = currentProducts.find(p => p.id === it.product_id) || {
+                            id: it.product_id || gen_random_uuid(),
+                            name: it.product_name,
+                            sale_price: it.unit_price,
+                            current_stock: 999
+                        };
+                        cart.push({ product: matchedProd, qty: Number(it.quantity) });
+                    });
+
+                    const cartContainer = document.getElementById('pos-cart-items');
+                    if (cartContainer) cartContainer.innerHTML = renderCartItemsHTML();
+                    updateCartTotals(biz);
+
+                    // Si le client existe dans la liste, le sélectionner
+                    if (order.customer_id) {
+                        const custSelect = document.getElementById('cart-customer-select');
+                        if (custSelect) custSelect.value = order.customer_id;
+                    }
+
+                    closeModal();
+                    toast.success('Commande chargée', `Les articles de la commande #${order.order_number} ont été intégrés au panier de caisse.`);
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        body.innerHTML = `<div style="color:var(--color-danger); padding:20px;">Erreur de chargement des commandes.</div>`;
+    }
 }
 
 /**

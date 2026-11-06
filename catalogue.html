@@ -28,62 +28,166 @@
         </div>
     </div>
 
-    <!-- BARRE FLOTTANTE DU PANIER WHATSAPP -->
+    <!-- BARRE FLOTTANTE DU PANIER -->
     <div class="catalogue-floating-cart-bar" id="cat-floating-cart">
         <div class="cart-bar-info">
             <div class="cart-bar-badge" id="cat-cart-badge">0</div>
             <div>
-                <div class="cart-bar-total-label">Panier de commande</div>
+                <div class="cart-bar-total-label">Panier en cours</div>
                 <div class="cart-bar-total-amount" id="cat-cart-total">0.00 HTG</div>
             </div>
         </div>
         <button type="button" class="btn-cart-bar-checkout" id="btn-open-cart-sheet">
-            <span>Commander</span>
+            <span>Valider ma commande</span>
             <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
         </button>
     </div>
 
-    <!-- TIROIR MODAL DU PANIER (BOTTOM SHEET) -->
+    <!-- TIROIR MODAL DU PANIER & COMMANDE EN LIGNE (BOTTOM SHEET) -->
     <div class="cart-sheet-backdrop" id="cart-sheet-modal">
         <div class="cart-sheet-dialog">
             <div class="cart-sheet-header">
                 <div class="cart-sheet-title">
                     <i data-lucide="shopping-bag" style="color: var(--color-primary);"></i>
-                    <span>Votre Commande WhatsApp</span>
+                    <span>Votre Commande en Ligne</span>
                 </div>
                 <button type="button" class="cart-sheet-close" id="btn-close-cart-sheet">
                     <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                 </button>
             </div>
 
-            <div class="cart-sheet-body">
+            <div class="cart-sheet-body" id="cart-checkout-body">
                 <div id="cart-sheet-items-list"></div>
 
-                <div class="cart-sheet-form">
+                <!-- FORMULAIRE DE COMMANDE & COMPTE CLIENT -->
+                <div class="cart-sheet-form" id="checkout-form-container">
+                    <div id="checkout-auth-banner"></div>
+
                     <div>
                         <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Votre nom et prénom *</label>
-                        <input type="text" id="order-customer-name" class="form-control" placeholder="Ex: Stéphanie Paul" style="height: 40px; font-size: 14px;">
+                        <input type="text" id="order-customer-name" class="form-control" placeholder="Ex: Stéphanie Paul" required style="height: 42px; font-size: 14px;">
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Téléphone de contact</label>
-                        <input type="tel" id="order-customer-phone" class="form-control" placeholder="Ex: +509 3455 6677" style="height: 40px; font-size: 14px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Numéro Téléphone / WhatsApp *</label>
+                        <input type="tel" id="order-customer-phone" class="form-control" placeholder="Ex: +509 3455 6677" required style="height: 42px; font-size: 14px;">
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Remarque, date ou adresse de livraison</label>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Adresse de livraison ou ville</label>
+                        <input type="text" id="order-customer-address" class="form-control" placeholder="Ex: Laboule 12, Pétion-Ville" style="height: 42px; font-size: 14px;">
+                    </div>
+
+                    <!-- Création de mot de passe si non connecté -->
+                    <div id="checkout-password-group">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">
+                            Mot de passe secret (pour suivre vos commandes) *
+                        </label>
+                        <input type="password" id="order-customer-password" class="form-control" placeholder="4 à 6 chiffres ou mot de passe" style="height: 42px; font-size: 14px;">
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 3px; display: block;">
+                            Un profil client sera automatiquement créé pour vous permettre de suivre le statut en direct.
+                        </span>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--color-navy); display: block; margin-bottom: 4px;">Remarques, date ou heure souhaitée</label>
                         <textarea id="order-customer-notes" class="form-control" rows="2" placeholder="Précisez un rendez-vous ou des détails particuliers..." style="min-height: 60px; font-size: 13px;"></textarea>
                     </div>
                 </div>
+
+                <!-- ÉCRAN DE CONFIRMATION DE COMMANDE -->
+                <div id="order-confirmation-view" style="display: none; padding: 20px 0; text-align: center;"></div>
             </div>
 
-            <div class="cart-sheet-footer">
+            <div class="cart-sheet-footer" id="cart-sheet-footer">
                 <div class="cart-sheet-total-row">
-                    <span class="cart-sheet-total-label">Total estimé :</span>
+                    <span class="cart-sheet-total-label">Total à payer :</span>
                     <span class="cart-sheet-total-val" id="cart-sheet-total-val">0.00 HTG</span>
                 </div>
-                <button type="button" class="btn-send-wa-order" id="btn-confirm-wa-order">
-                    <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
-                    <span>Envoyer la commande sur WhatsApp</span>
+                <button type="button" class="btn btn-primary" id="btn-submit-order" style="width: 100%; height: 48px; border-radius: 999px; font-size: 15px; font-weight: 700; gap: 8px;">
+                    <i data-lucide="check-circle-2"></i>
+                    <span>Enregistrer la commande</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE ESPACE CLIENT (CONNEXION & SUIVI COMMANDES) -->
+    <div class="modal-overlay" id="customer-account-modal">
+        <div class="modal-dialog" style="max-width: 520px;">
+            <div class="modal-header">
+                <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="user" style="color: var(--color-primary);"></i>
+                    <span id="account-modal-title">Espace Client</span>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-close-account-modal" style="padding: 4px 8px;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- VUE 1 : CLIENT CONNECTÉ (MES COMMANDES) -->
+                <div id="view-customer-orders" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+                        <div>
+                            <div style="font-weight: 700; font-size: 15px; color: var(--color-navy);" id="logged-customer-name">Stéphanie Paul</div>
+                            <div style="font-size: 12px; color: var(--text-muted);" id="logged-customer-phone">+509 3455 6677</div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-customer-logout" style="color: var(--color-danger); border-color: #FECACA;">
+                            <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                            <span>Déconnexion</span>
+                        </button>
+                    </div>
+
+                    <div style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--color-navy); margin-bottom: 12px;">
+                        Historique de mes commandes
+                    </div>
+                    <div id="customer-orders-list"></div>
+                </div>
+
+                <!-- VUE 2 : FORMULAIRE DE CONNEXION / INSCRIPTION -->
+                <div id="view-customer-auth">
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <button type="button" class="btn btn-primary btn-sm" id="tab-auth-login" style="flex: 1;">Se connecter</button>
+                        <button type="button" class="btn btn-outline btn-sm" id="tab-auth-register" style="flex: 1;">Créer un profil</button>
+                    </div>
+
+                    <!-- 2.1 FORMULAIRE CONNEXION -->
+                    <form id="form-customer-login">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label">Numéro Téléphone / WhatsApp</label>
+                            <input type="tel" id="auth-login-phone" class="form-control" placeholder="+509 3455 6677" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label">Mot de passe secret</label>
+                            <input type="password" id="auth-login-pass" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; border-radius: 999px;">
+                            <span>Accéder à mes commandes</span>
+                        </button>
+                    </form>
+
+                    <!-- 2.2 FORMULAIRE INSCRIPTION -->
+                    <form id="form-customer-register" style="display: none;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label">Nom et Prénom *</label>
+                            <input type="text" id="auth-reg-name" class="form-control" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label">Téléphone / WhatsApp *</label>
+                            <input type="tel" id="auth-reg-phone" class="form-control" placeholder="+509 3455 6677" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="form-label">Adresse de livraison</label>
+                            <input type="text" id="auth-reg-address" class="form-control" placeholder="Votre quartier ou ville">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label">Créer un mot de passe *</label>
+                            <input type="password" id="auth-reg-pass" class="form-control" placeholder="4 à 6 chiffres minimum" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; border-radius: 999px;">
+                            <span>Créer mon compte client</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -94,6 +198,15 @@
         let cartItems = [];
         let currentBusiness = null;
         let currentCurrency = 'HTG';
+        let loggedCustomer = JSON.parse(localStorage.getItem('CVISUAL_CUSTOMER_SESSION') || 'null');
+
+        // Hachage sécurisé SHA-256 natif
+        async function sha256(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         function getIconForProduct(product) {
             const name = (product.name || '').toLowerCase();
@@ -155,10 +268,17 @@
                 const categories = catsRes.data || [];
                 const products = prodsRes.data || [];
 
-                // Monogramme initiales si pas de logo
                 const initials = (biz.name || 'CV').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
                 root.innerHTML = `
+                    <!-- BARRE ESPACE CLIENT -->
+                    <div class="catalogue-user-bar">
+                        <button type="button" class="btn-customer-account ${loggedCustomer ? 'active' : ''}" id="btn-open-account">
+                            <i data-lucide="user"></i>
+                            <span id="nav-account-label">${loggedCustomer ? `${loggedCustomer.name.split(' ')[0]} • Mes Commandes` : 'Se connecter / Mes commandes'}</span>
+                        </button>
+                    </div>
+
                     <!-- HERO BANNER -->
                     <div class="catalogue-hero">
                         <div class="catalogue-cover" style="${biz.cover_url ? `background-image: url('${biz.cover_url}');` : ''}"></div>
@@ -241,13 +361,13 @@
                         </div>
                     </div>
 
-                    <!-- GRILLE PRODUITS -->
+                    <!-- GRILLE PRODUITS (2 COLONNES MOBIL, 3-4 DESKTOP) -->
                     <div class="catalogue-products-grid" id="cat-products-grid">
                         ${renderProductsGridHTML(products, currentCurrency)}
                     </div>
 
                     <footer style="margin-top: 50px; padding: 24px 0; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 12px; font-size: 12px; color: var(--text-light);">
-                        <div>© ${new Date().getFullYear()} ${biz.name} • Tous droits réservés.</div>
+                        <div>© ${new Date().getFullYear()} ${biz.name} • Commandes directes enregistrées en caisse.</div>
                         <div style="font-weight: 600; color: var(--color-navy);">Designed by Cvisual</div>
                     </footer>
                 `;
@@ -321,16 +441,30 @@
             const btnCloseCart = document.getElementById('btn-close-cart-sheet');
             const cartItemsList = document.getElementById('cart-sheet-items-list');
             const cartSheetTotalVal = document.getElementById('cart-sheet-total-val');
-            const btnConfirmOrder = document.getElementById('btn-confirm-wa-order');
+            const btnSubmitOrder = document.getElementById('btn-submit-order');
+            const checkoutFormContainer = document.getElementById('checkout-form-container');
+            const orderConfirmationView = document.getElementById('order-confirmation-view');
+            const cartSheetFooter = document.getElementById('cart-sheet-footer');
+
+            // Éléments Espace Client
+            const accountModal = document.getElementById('customer-account-modal');
+            const btnOpenAccount = document.getElementById('btn-open-account');
+            const btnCloseAccount = document.getElementById('btn-close-account-modal');
+            const viewCustomerOrders = document.getElementById('view-customer-orders');
+            const viewCustomerAuth = document.getElementById('view-customer-auth');
+            const tabAuthLogin = document.getElementById('tab-auth-login');
+            const tabAuthRegister = document.getElementById('tab-auth-register');
+            const formLogin = document.getElementById('form-customer-login');
+            const formRegister = document.getElementById('form-customer-register');
+            const btnCustomerLogout = document.getElementById('btn-customer-logout');
+            const customerOrdersList = document.getElementById('customer-orders-list');
 
             let activeCat = '';
             let searchTerm = '';
 
             function filter() {
                 let filtered = allProducts;
-                if (activeCat) {
-                    filtered = filtered.filter(p => p.category_id === activeCat);
-                }
+                if (activeCat) filtered = filtered.filter(p => p.category_id === activeCat);
                 if (searchTerm) {
                     const q = searchTerm.toLowerCase();
                     filtered = filtered.filter(p => 
@@ -358,7 +492,7 @@
                 });
             });
 
-            // GESTION DU PANIER DE COMMANDE WHATSAPP
+            // GESTION DU PANIER
             function updateCartUI() {
                 const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
                 const totalPrice = cartItems.reduce((acc, item) => acc + (item.product.sale_price * item.quantity), 0);
@@ -373,7 +507,6 @@
                     cartModal.classList.remove('open');
                 }
 
-                // Rendu de la liste dans le tiroir modal
                 if (cartItems.length === 0) {
                     cartItemsList.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px 0;">Votre panier est vide.</div>`;
                 } else {
@@ -393,7 +526,33 @@
                 }
             }
 
-            // Clic sur le bouton '+' d'une carte produit
+            // Sync formulaire de checkout selon le client connecté
+            function refreshCheckoutAuthUI() {
+                const banner = document.getElementById('checkout-auth-banner');
+                const nameInput = document.getElementById('order-customer-name');
+                const phoneInput = document.getElementById('order-customer-phone');
+                const addrInput = document.getElementById('order-customer-address');
+                const passGroup = document.getElementById('checkout-password-group');
+
+                if (loggedCustomer) {
+                    banner.innerHTML = `
+                        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; padding: 10px 14px; border-radius: var(--radius-md); font-size: 12.5px; color: #065F46; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Connecté en tant que <strong>${loggedCustomer.name}</strong></span>
+                            <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                        </div>
+                    `;
+                    nameInput.value = loggedCustomer.name || '';
+                    phoneInput.value = loggedCustomer.phone || '';
+                    addrInput.value = loggedCustomer.address || '';
+                    passGroup.style.display = 'none';
+                } else {
+                    banner.innerHTML = '';
+                    passGroup.style.display = 'block';
+                }
+                lucide.createIcons();
+            }
+
+            // Clic sur '+' d'une carte produit
             grid.addEventListener('click', (e) => {
                 const addBtn = e.target.closest('.btn-add-cart-mini');
                 if (addBtn) {
@@ -407,8 +566,6 @@
                             cartItems.push({ product, quantity: 1 });
                         }
                         updateCartUI();
-
-                        // Petit feedback haptique / visuel
                         addBtn.style.transform = 'scale(1.2)';
                         setTimeout(() => addBtn.style.transform = '', 150);
                     }
@@ -417,6 +574,13 @@
 
             // Ouvrir / Fermer le tiroir du panier
             btnOpenCart.addEventListener('click', () => {
+                // Réinitialiser la vue de commande
+                checkoutFormContainer.style.display = 'flex';
+                cartItemsList.style.display = 'block';
+                orderConfirmationView.style.display = 'none';
+                cartSheetFooter.style.display = 'block';
+
+                refreshCheckoutAuthUI();
                 cartModal.classList.add('open');
             });
 
@@ -428,7 +592,7 @@
                 if (e.target === cartModal) cartModal.classList.remove('open');
             });
 
-            // Boutons quantité dans le panier
+            // Incrément / Décrément quantités
             cartItemsList.addEventListener('click', (e) => {
                 const decBtn = e.target.closest('.btn-decrease-qty');
                 const incBtn = e.target.closest('.btn-increase-qty');
@@ -437,11 +601,8 @@
                     const id = decBtn.getAttribute('data-product-id');
                     const idx = cartItems.findIndex(i => i.product.id === id);
                     if (idx > -1) {
-                        if (cartItems[idx].quantity > 1) {
-                            cartItems[idx].quantity--;
-                        } else {
-                            cartItems.splice(idx, 1);
-                        }
+                        if (cartItems[idx].quantity > 1) cartItems[idx].quantity--;
+                        else cartItems.splice(idx, 1);
                         updateCartUI();
                     }
                 }
@@ -456,40 +617,340 @@
                 }
             });
 
-            // Envoi de la commande sur WhatsApp
-            btnConfirmOrder.addEventListener('click', () => {
+            // SOUMISSION ET ENREGISTREMENT DIRECT DANS L'ENTREPRISE
+            btnSubmitOrder.addEventListener('click', async () => {
                 if (cartItems.length === 0) return;
 
-                const nameInput = document.getElementById('order-customer-name').value.trim();
-                const phoneInput = document.getElementById('order-customer-phone').value.trim();
-                const notesInput = document.getElementById('order-customer-notes').value.trim();
+                const name = document.getElementById('order-customer-name').value.trim();
+                const phone = document.getElementById('order-customer-phone').value.trim();
+                const address = document.getElementById('order-customer-address').value.trim();
+                const notes = document.getElementById('order-customer-notes').value.trim();
+                const password = document.getElementById('order-customer-password').value.trim();
 
-                const waPhone = (biz.whatsapp || biz.phone || '').replace(/[^0-9]/g, '');
-                if (!waPhone) {
-                    alert('Le numéro WhatsApp de cet établissement n\'est pas configuré.');
+                if (!name || !phone) {
+                    alert('Veuillez renseigner votre nom et votre numéro de téléphone.');
                     return;
                 }
 
-                const totalPrice = cartItems.reduce((acc, item) => acc + (item.product.sale_price * item.quantity), 0);
+                btnSubmitOrder.disabled = true;
+                btnSubmitOrder.innerHTML = `<span>Enregistrement en cours...</span>`;
 
-                let message = `*COMMANDE EN LIGNE — ${biz.name.toUpperCase()}*\n`;
-                message += `------------------------------------\n`;
-                cartItems.forEach(item => {
-                    const sub = item.product.sale_price * item.quantity;
-                    message += `• *${item.quantity}x* ${item.product.name} — ${sub.toLocaleString()} ${curr}\n`;
-                });
-                message += `------------------------------------\n`;
-                message += `*TOTAL ESTIMÉ : ${totalPrice.toLocaleString()} ${curr}*\n\n`;
+                try {
+                    let customerId = loggedCustomer?.id;
 
-                if (nameInput) message += `👤 *Client :* ${nameInput}\n`;
-                if (phoneInput) message += `📞 *Téléphone :* ${phoneInput}\n`;
-                if (notesInput) message += `📝 *Instructions / Date :* ${notesInput}\n`;
+                    // 1. Si pas connecté, créer ou lier le client
+                    if (!customerId) {
+                        const passHash = password ? await sha256(password) : null;
 
-                message += `\nMerci de confirmer la disponibilité et les modalités de paiement !`;
+                        // Vérifier si le client existe déjà par téléphone
+                        const { data: existingCust } = await db.from('cvisual_customers')
+                            .select('*')
+                            .eq('business_id', biz.id)
+                            .eq('phone', phone)
+                            .maybeSingle();
 
-                const url = `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
-                window.open(url, '_blank');
+                        if (existingCust) {
+                            customerId = existingCust.id;
+                            if (passHash && !existingCust.password_hash) {
+                                await db.from('cvisual_customers').update({ password_hash: passHash, address: address || existingCust.address }).eq('id', customerId);
+                            }
+                            loggedCustomer = existingCust;
+                        } else {
+                            // Insérer nouveau profil client
+                            const { data: newCust, error: custErr } = await db.from('cvisual_customers').insert([{
+                                business_id: biz.id,
+                                name: name,
+                                phone: phone,
+                                address: address,
+                                password_hash: passHash,
+                                notes: 'Client inscrit via le catalogue en ligne'
+                            }]).select().single();
+
+                            if (!custErr && newCust) {
+                                customerId = newCust.id;
+                                loggedCustomer = newCust;
+                            }
+                        }
+
+                        // Sauvegarder la session client
+                        if (loggedCustomer) {
+                            localStorage.setItem('CVISUAL_CUSTOMER_SESSION', JSON.stringify(loggedCustomer));
+                            document.getElementById('nav-account-label').textContent = `${loggedCustomer.name.split(' ')[0]} • Mes Commandes`;
+                            document.getElementById('btn-open-account').classList.add('active');
+                        }
+                    }
+
+                    // 2. Générer le numéro de commande
+                    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+                    const orderNumber = `CMD-${dateStr}-${randomSuffix}`;
+                    const totalPrice = cartItems.reduce((acc, item) => acc + (item.product.sale_price * item.quantity), 0);
+
+                    // 3. Enregistrer la commande dans cvisual_online_orders
+                    const { data: orderData, error: orderErr } = await db.from('cvisual_online_orders').insert([{
+                        order_number: orderNumber,
+                        business_id: biz.id,
+                        customer_id: customerId || null,
+                        customer_name: name,
+                        customer_phone: phone,
+                        delivery_address: address,
+                        subtotal: totalPrice,
+                        total_amount: totalPrice,
+                        currency: curr,
+                        status: 'pending',
+                        notes: notes
+                    }]).select().single();
+
+                    if (orderErr) throw orderErr;
+
+                    // 4. Enregistrer les lignes d'articles dans cvisual_online_order_items
+                    const orderItemsPayload = cartItems.map(item => ({
+                        order_id: orderData.id,
+                        product_id: item.product.id,
+                        product_name: item.product.name,
+                        quantity: item.quantity,
+                        unit_price: item.product.sale_price,
+                        total_price: item.product.sale_price * item.quantity
+                    }));
+
+                    await db.from('cvisual_online_order_items').insert(orderItemsPayload);
+
+                    // 5. Afficher la confirmation avec succès
+                    const savedItems = [...cartItems];
+                    cartItems = [];
+                    updateCartUI();
+
+                    checkoutFormContainer.style.display = 'none';
+                    cartItemsList.style.display = 'none';
+                    cartSheetFooter.style.display = 'none';
+                    orderConfirmationView.style.display = 'block';
+
+                    const cleanWaPhone = (biz.whatsapp || biz.phone || '').replace(/[^0-9]/g, '');
+                    const waMessage = encodeURIComponent(`Bonjour ${biz.name}, je viens de valider ma commande #${orderNumber} d'un montant de ${totalPrice.toLocaleString()} ${curr} sur votre vitrine en ligne.`);
+
+                    orderConfirmationView.innerHTML = `
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: #ECFDF5; color: #10B981; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                            <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+                        </div>
+                        <h2 style="font-family: var(--font-heading); font-size: 18px; font-weight: 800; color: var(--color-navy); margin-bottom: 6px;">Commande transmise avec succès !</h2>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                            Numéro de référence : <strong style="color: var(--color-primary); font-family: var(--font-mono);">${orderNumber}</strong>
+                        </div>
+
+                        <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; text-align: left; margin-bottom: 20px; font-size: 13px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                <span>Statut actuel :</span>
+                                <span class="order-status-badge order-status-pending">🟡 En attente de confirmation</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Total commande :</span>
+                                <strong style="color: var(--color-primary);">${totalPrice.toLocaleString()} ${curr}</strong>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            ${cleanWaPhone ? `
+                                <a href="https://wa.me/${cleanWaPhone}?text=${waMessage}" target="_blank" class="btn btn-outline" style="border-color: #25D366; color: #16A34A; width: 100%; height: 44px; border-radius: 999px;">
+                                    <i data-lucide="message-circle"></i>
+                                    <span>Informer la boutique sur WhatsApp</span>
+                                </a>
+                            ` : ''}
+                            <button type="button" class="btn btn-primary" id="btn-view-my-orders" style="width: 100%; height: 44px; border-radius: 999px;">
+                                <i data-lucide="list"></i>
+                                <span>Voir mes commandes en direct</span>
+                            </button>
+                        </div>
+                    `;
+
+                    lucide.createIcons({ root: orderConfirmationView });
+
+                    document.getElementById('btn-view-my-orders').onclick = () => {
+                        cartModal.classList.remove('open');
+                        openCustomerAccountModal();
+                    };
+
+                } catch (err) {
+                    console.error('Erreur commande:', err);
+                    alert(`Une erreur est survenue lors de l'enregistrement : ${err.message || err}`);
+                } finally {
+                    btnSubmitOrder.disabled = false;
+                    btnSubmitOrder.innerHTML = `<i data-lucide="check-circle-2"></i><span>Enregistrer la commande</span>`;
+                    lucide.createIcons({ root: btnSubmitOrder });
+                }
             });
+
+            // =================================================================
+            // ESPACE CLIENT : HISTORIQUE ET AUTHENTIFICATION
+            // =================================================================
+            async function loadCustomerOrders() {
+                if (!loggedCustomer) return;
+                customerOrdersList.innerHTML = `<div style="text-align: center; padding: 24px 0;"><i data-lucide="loader" style="animation: spin 1s linear infinite;"></i></div>`;
+                lucide.createIcons({ root: customerOrdersList });
+
+                try {
+                    const { data: orders, error } = await db.from('cvisual_online_orders')
+                        .select('*, cvisual_online_order_items(*)')
+                        .eq('business_id', biz.id)
+                        .or(`customer_phone.eq.${loggedCustomer.phone},customer_id.eq.${loggedCustomer.id}`)
+                        .order('created_at', { ascending: false });
+
+                    if (error || !orders || orders.length === 0) {
+                        customerOrdersList.innerHTML = `
+                            <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 13px;">
+                                Vous n'avez pas encore passé de commande dans cet établissement.
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const statusMap = {
+                        'pending': { label: 'En attente 🟡', class: 'order-status-pending' },
+                        'confirmed': { label: 'Confirmée 🔵', class: 'order-status-confirmed' },
+                        'preparing': { label: 'En préparation 🟣', class: 'order-status-preparing' },
+                        'ready': { label: 'Prête 🟢', class: 'order-status-ready' },
+                        'delivered': { label: 'Livrée ✅', class: 'order-status-delivered' },
+                        'cancelled': { label: 'Annulée 🔴', class: 'order-status-cancelled' }
+                    };
+
+                    customerOrdersList.innerHTML = orders.map(ord => {
+                        const st = statusMap[ord.status] || { label: ord.status, class: 'order-status-pending' };
+                        const itemsSummary = (ord.cvisual_online_order_items || [])
+                            .map(i => `${i.quantity}x ${i.product_name}`)
+                            .join(', ');
+
+                        const dateFormatted = new Date(ord.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                        });
+
+                        return `
+                            <div class="customer-order-card">
+                                <div class="customer-order-header">
+                                    <span class="customer-order-num">${ord.order_number}</span>
+                                    <span class="customer-order-date">${dateFormatted}</span>
+                                </div>
+                                <div class="customer-order-items-preview">
+                                    ${itemsSummary || 'Articles commandés'}
+                                </div>
+                                <div class="customer-order-footer">
+                                    <span class="order-status-badge ${st.class}">${st.label}</span>
+                                    <strong style="color: var(--color-primary); font-size: 14px;">${Number(ord.total_amount).toLocaleString()} ${ord.currency}</strong>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                } catch (e) {
+                    console.error('Erreur chargement commandes:', e);
+                    customerOrdersList.innerHTML = `<div style="color: var(--color-danger); padding: 16px 0;">Impossible de charger les commandes.</div>`;
+                }
+            }
+
+            function openCustomerAccountModal() {
+                if (loggedCustomer) {
+                    document.getElementById('logged-customer-name').textContent = loggedCustomer.name;
+                    document.getElementById('logged-customer-phone').textContent = loggedCustomer.phone;
+                    viewCustomerOrders.style.display = 'block';
+                    viewCustomerAuth.style.display = 'none';
+                    loadCustomerOrders();
+                } else {
+                    viewCustomerOrders.style.display = 'none';
+                    viewCustomerAuth.style.display = 'block';
+                }
+                accountModal.classList.add('active');
+                lucide.createIcons();
+            }
+
+            btnOpenAccount.onclick = openCustomerAccountModal;
+            btnCloseAccount.onclick = () => accountModal.classList.remove('active');
+            accountModal.onclick = (e) => {
+                if (e.target === accountModal) accountModal.classList.remove('active');
+            };
+
+            // Bascule Onglets Login / Register dans la modale
+            tabAuthLogin.onclick = () => {
+                tabAuthLogin.className = 'btn btn-primary btn-sm';
+                tabAuthRegister.className = 'btn btn-outline btn-sm';
+                formLogin.style.display = 'block';
+                formRegister.style.display = 'none';
+            };
+
+            tabAuthRegister.onclick = () => {
+                tabAuthRegister.className = 'btn btn-primary btn-sm';
+                tabAuthLogin.className = 'btn btn-outline btn-sm';
+                formLogin.style.display = 'none';
+                formRegister.style.display = 'block';
+            };
+
+            // Soumission Connexion Client
+            formLogin.onsubmit = async (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('auth-login-phone').value.trim();
+                const pass = document.getElementById('auth-login-pass').value.trim();
+                const passHash = await sha256(pass);
+
+                const { data: cust, error } = await db.from('cvisual_customers')
+                    .select('*')
+                    .eq('business_id', biz.id)
+                    .eq('phone', phone)
+                    .eq('password_hash', passHash)
+                    .maybeSingle();
+
+                if (error || !cust) {
+                    alert('Identifiants incorrects ou aucun compte trouvé avec ce numéro.');
+                    return;
+                }
+
+                loggedCustomer = cust;
+                localStorage.setItem('CVISUAL_CUSTOMER_SESSION', JSON.stringify(cust));
+                document.getElementById('nav-account-label').textContent = `${cust.name.split(' ')[0]} • Mes Commandes`;
+                document.getElementById('btn-open-account').classList.add('active');
+
+                viewCustomerOrders.style.display = 'block';
+                viewCustomerAuth.style.display = 'none';
+                loadCustomerOrders();
+            };
+
+            // Soumission Inscription Client
+            formRegister.onsubmit = async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('auth-reg-name').value.trim();
+                const phone = document.getElementById('auth-reg-phone').value.trim();
+                const address = document.getElementById('auth-reg-address').value.trim();
+                const pass = document.getElementById('auth-reg-pass').value.trim();
+                const passHash = await sha256(pass);
+
+                const { data: newCust, error } = await db.from('cvisual_customers').insert([{
+                    business_id: biz.id,
+                    name,
+                    phone,
+                    address,
+                    password_hash: passHash
+                }]).select().single();
+
+                if (error) {
+                    alert('Erreur lors de la création du compte : ' + error.message);
+                    return;
+                }
+
+                loggedCustomer = newCust;
+                localStorage.setItem('CVISUAL_CUSTOMER_SESSION', JSON.stringify(newCust));
+                document.getElementById('nav-account-label').textContent = `${newCust.name.split(' ')[0]} • Mes Commandes`;
+                document.getElementById('btn-open-account').classList.add('active');
+
+                viewCustomerOrders.style.display = 'block';
+                viewCustomerAuth.style.display = 'none';
+                loadCustomerOrders();
+            };
+
+            // Déconnexion Client
+            btnCustomerLogout.onclick = () => {
+                loggedCustomer = null;
+                localStorage.removeItem('CVISUAL_CUSTOMER_SESSION');
+                document.getElementById('nav-account-label').textContent = 'Se connecter / Mes commandes';
+                document.getElementById('btn-open-account').classList.remove('active');
+                viewCustomerOrders.style.display = 'none';
+                viewCustomerAuth.style.display = 'block';
+            };
         }
 
         window.addEventListener('DOMContentLoaded', initCatalogue);
