@@ -2,8 +2,5 @@
   "name": "cvisual-pos",
   "version": "1.0.0",
   "private": true,
-  "description": "Cvisual POS — Système de gestion et point de vente multi-entreprises offline-first",
-  "scripts": {
-    "build": "echo 'Build static files complete'"
-  }
+  "description": "Cvisual POS — Système de gestion et point de vente multi-entreprises offline-first"
 }
