@@ -9,6 +9,7 @@ import { updateSyncBadge } from './sync.js';
 
 const routes = {
     'pos': () => import('./modules/sales.js'),
+    'dashboard': () => import('./modules/dashboard.js'),
     'products': () => import('./modules/products.js'),
     'stock': () => import('./modules/stock.js'),
     'customers': () => import('./modules/customers.js'),
